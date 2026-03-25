@@ -8,12 +8,17 @@
 - アップロードされたファイルは `Cloud Storage` に保存されること
 - 保存時に一意な `document_id` を採番すること
 - ファイル名、ファイルサイズ、MIME type、保存先 URI、作成日時を記録すること
+- アップロード完了後、処理を即時開始すること（バッチ待ちなし）
+- zip ファイルは1ファイル = 1 `document_id` として扱うこと
+- zip 内の対応外ファイルは無視し、対応ファイルのみ処理すること
+- zip のネストは初期スコープに含めない
 
 ### Text Extraction
 
 - PDF、Markdown、TXT、CSV からテキストを抽出できること
 - 抽出結果を意味的またはサイズ上の単位で chunk に分割できること
 - 各 chunk に `chunk_id` と `chunk_index` を付与すること
+- 各 chunk に `source_filename` を付与すること（zip の場合は展開後のファイル名、単ファイルの場合は元ファイル名）
 - 可能な範囲でページ番号やオフセットなどの出典位置情報を保持すること
 
 ### Node and Edge Extraction by Gemini

@@ -69,6 +69,7 @@ document の解析を開始する。
 
 - `node_type`
 - `limit`
+- `source_filename` : zip 内の特定ファイル由来のノード・エッジに絞り込む（省略時は全ファイル対象）
 
 #### Response Example
 

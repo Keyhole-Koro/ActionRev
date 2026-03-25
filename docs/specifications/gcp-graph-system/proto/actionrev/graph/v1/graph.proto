@@ -14,6 +14,7 @@ message GetGraphRequest {
   string document_id = 1;
   NodeType node_type_filter = 2;
   int32 limit = 3;
+  string source_filename_filter = 4;
 }
 
 message GetGraphResponse {

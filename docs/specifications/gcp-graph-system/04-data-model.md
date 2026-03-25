@@ -30,6 +30,7 @@
 | chunk_id | STRING | chunk 識別子 |
 | chunk_index | INT64 | chunk 順序 |
 | text | STRING | chunk テキスト |
+| source_filename | STRING | 元ファイル名（zip 内ファイルの場合は展開後のファイル名、単ファイルの場合は document の filename と同値） |
 | source_page | INT64 | 元ページ番号 |
 | source_offset_start | INT64 | 開始オフセット |
 | source_offset_end | INT64 | 終了オフセット |
