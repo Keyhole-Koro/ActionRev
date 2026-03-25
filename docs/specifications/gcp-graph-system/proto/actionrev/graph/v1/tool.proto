@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package actionrev.graph.v1;
+
+option go_package = "github.com/actionrev/backend/gen/actionrev/graph/v1;graphv1";
+
+import "actionrev/graph/v1/common.proto";
+
+service ToolService {
+  rpc GenerateNormalizationTool(GenerateNormalizationToolRequest) returns (GenerateNormalizationToolResponse);
+  rpc SaveNormalizationTool(SaveNormalizationToolRequest) returns (SaveNormalizationToolResponse);
+  rpc ListNormalizationTools(ListNormalizationToolsRequest) returns (ListNormalizationToolsResponse);
+  rpc RunNormalizationTool(RunNormalizationToolRequest) returns (RunNormalizationToolResponse);
+  rpc GetNormalizationToolRun(GetNormalizationToolRunRequest) returns (GetNormalizationToolRunResponse);
+}
+
+message GenerateNormalizationToolRequest {
+  string document_id = 1;
+  string problem_statement = 2;
+  string sample_input = 3;
+  string desired_output_description = 4;
+}
+
+message GenerateNormalizationToolResponse {
+  string generated_code = 1;
+  string generated_manifest = 2;
+}
+
+message SaveNormalizationToolRequest {
+  string name = 1;
+  string version = 2;
+  string description = 3;
+  string code = 4;
+  string manifest = 5;
+}
+
+message SaveNormalizationToolResponse {
+  NormalizationTool tool = 1;
+}
+
+message ListNormalizationToolsRequest {
+  string file_type = 1;
+  ToolApprovalStatus approval_status = 2;
+}
+
+message ListNormalizationToolsResponse {
+  repeated NormalizationTool tools = 1;
+}
+
+message RunNormalizationToolRequest {
+  string tool_id = 1;
+  string tool_version = 2;
+  string document_id = 3;
+  ToolRunMode mode = 4;
+}
+
+message RunNormalizationToolResponse {
+  NormalizationToolRun run = 1;
+}
+
+message GetNormalizationToolRunRequest {
+  string run_id = 1;
+}
+
+message GetNormalizationToolRunResponse {
+  NormalizationToolRun run = 1;
+}

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package actionrev.graph.v1;
+
+option go_package = "github.com/actionrev/backend/gen/actionrev/graph/v1;graphv1";
+
+import "actionrev/graph/v1/common.proto";
+
+service GraphService {
+  rpc GetGraph(GetGraphRequest) returns (GetGraphResponse);
+}
+
+message GetGraphRequest {
+  string document_id = 1;
+  NodeType node_type_filter = 2;
+  int32 limit = 3;
+}
+
+message GetGraphResponse {
+  Graph graph = 1;
+}

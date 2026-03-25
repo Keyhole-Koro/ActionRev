@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package actionrev.graph.v1;
+
+option go_package = "github.com/actionrev/backend/gen/actionrev/graph/v1;graphv1";
+
+import "actionrev/graph/v1/common.proto";
+
+service NodeService {
+  rpc GetNode(GetNodeRequest) returns (GetNodeResponse);
+}
+
+message GetNodeRequest {
+  string document_id = 1;
+  string node_id = 2;
+}
+
+message GetNodeResponse {
+  Node node = 1;
+  repeated Edge related_edges = 2;
+  repeated DocumentChunk source_chunks = 3;
+}

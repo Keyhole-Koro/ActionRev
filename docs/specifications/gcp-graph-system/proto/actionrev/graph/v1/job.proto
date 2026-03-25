@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package actionrev.graph.v1;
+
+option go_package = "github.com/actionrev/backend/gen/actionrev/graph/v1;graphv1";
+
+import "actionrev/graph/v1/common.proto";
+
+service JobService {
+  rpc GetJobStatus(GetJobStatusRequest) returns (GetJobStatusResponse);
+}
+
+message GetJobStatusRequest {
+  string job_id = 1;
+}
+
+message GetJobStatusResponse {
+  Job job = 1;
+}

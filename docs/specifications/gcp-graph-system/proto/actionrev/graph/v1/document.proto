@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package actionrev.graph.v1;
+
+option go_package = "github.com/actionrev/backend/gen/actionrev/graph/v1;graphv1";
+
+import "actionrev/graph/v1/common.proto";
+
+service DocumentService {
+  rpc CreateDocument(CreateDocumentRequest) returns (CreateDocumentResponse);
+  rpc GetDocument(GetDocumentRequest) returns (GetDocumentResponse);
+  rpc ListDocuments(ListDocumentsRequest) returns (ListDocumentsResponse);
+  rpc StartProcessing(StartProcessingRequest) returns (StartProcessingResponse);
+}
+
+message CreateDocumentRequest {
+  string filename = 1;
+  string mime_type = 2;
+  int64 file_size = 3;
+  string upload_token = 4;
+}
+
+message CreateDocumentResponse {
+  Document document = 1;
+}
+
+message GetDocumentRequest {
+  string document_id = 1;
+}
+
+message GetDocumentResponse {
+  Document document = 1;
+}
+
+message ListDocumentsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  DocumentStatus status_filter = 3;
+}
+
+message ListDocumentsResponse {
+  repeated Document documents = 1;
+  string next_page_token = 2;
+}
+
+message StartProcessingRequest {
+  string document_id = 1;
+  bool force_reprocess = 2;
+}
+
+message StartProcessingResponse {
+  string document_id = 1;
+  Job job = 2;
+}
