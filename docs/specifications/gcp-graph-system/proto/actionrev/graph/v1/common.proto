@@ -32,9 +32,10 @@ message Node {
   string label = 3;
   NodeType type = 4;
   string description = 5;
-  string source_chunk_id = 6;
-  double confidence = 7;
-  string created_at = 8;
+  string summary_html = 6;
+  string source_chunk_id = 7;
+  double confidence = 8;
+  string created_at = 9;
 }
 
 message Edge {

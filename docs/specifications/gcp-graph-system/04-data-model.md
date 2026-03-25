@@ -44,6 +44,7 @@
 | label | STRING | 表示ラベル |
 | type | STRING | ノード種別 |
 | description | STRING | ノード説明 |
+| summary_html | STRING | ノードサマリの HTML（構造タグのみ、CSS はアプリ側注入）。null の場合は description にフォールバック |
 | source_chunk_id | STRING | 出典 chunk |
 | confidence | FLOAT64 | 生成信頼度 |
 | created_at | TIMESTAMP | 作成日時 |
