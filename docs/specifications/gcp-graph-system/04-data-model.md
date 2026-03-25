@@ -75,7 +75,42 @@
 
 ### node_aliases
 
-- 表記揺れや同義語統合に利用する
+トピックのカノニカル化とオントロジー統合に利用する。詳細は [10-topic-mapping.md](10-topic-mapping.md) を参照。
+
+| Column | Type | Description |
+| --- | --- | --- |
+| canonical_node_id | STRING | 正規ノード識別子 |
+| alias_node_id | STRING | 統合元ノード識別子 |
+| alias_label | STRING | 表記揺れラベル |
+| similarity_score | FLOAT64 | 類似スコア |
+| merge_status | STRING | `suggested` / `approved` / `rejected` |
+| created_at | TIMESTAMP | 作成日時 |
+
+### document_topic_mappings
+
+ドキュメントとトピック（abstract ノード）の対応関係を保存する。詳細は [10-topic-mapping.md](10-topic-mapping.md) を参照。
+
+| Column | Type | Description |
+| --- | --- | --- |
+| mapping_id | STRING | マッピング識別子 |
+| document_id | STRING | ドキュメント識別子 |
+| topic_node_id | STRING | トピック（abstract ノード）識別子 |
+| confidence | FLOAT64 | 信頼スコア |
+| reason | STRING | LLM による判定理由 |
+| method | STRING | `keyword` / `embedding` / `llm` / `manual` |
+| created_at | TIMESTAMP | 作成日時 |
+
+### node_scores
+
+グラフアルゴリズムの計算結果を保存する。詳細は [11-graph-algorithms.md](11-graph-algorithms.md) を参照。
+
+| Column | Type | Description |
+| --- | --- | --- |
+| node_id | STRING | ノード識別子 |
+| algo_type | STRING | `pagerank` / `degree_centrality` / `betweenness_centrality` / `community_id` |
+| score | FLOAT64 | スコア値 |
+| metadata | JSON | アルゴリズム固有の追加情報 |
+| computed_at | TIMESTAMP | 計算日時 |
 
 ### processing_jobs
 
