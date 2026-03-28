@@ -100,6 +100,35 @@ Discord の Incoming Webhook を使って管理者チャンネルに通知する
 - `Spanner Graph` への移行または併用
 - 高度なグラフ探索 API の追加
 
+## Billing and Plans
+
+### プラン構成
+
+詳細な制限値は [04-data-model.md](04-data-model.md) の `plans` テーブルを参照。
+
+| | free | pro | enterprise |
+| --- | --- | --- | --- |
+| ストレージ | 1GB | 20GB | カスタム |
+| ファイルサイズ | 10MB | 200MB | カスタム |
+| アップロード/日 | 10件 | 200件 | カスタム |
+| メンバー数 | 3人 | 20人 | カスタム |
+| extraction_depth | `summary` のみ | `full` + `summary` | `full` + `summary` |
+
+### 制限の適用方針
+
+- `GetUploadURL` RPC でファイルサイズとアップロード数を事前チェックする
+- `StartProcessing` RPC で `extraction_depth` がプランで許可されているか確認する
+- `InviteMember` RPC でメンバー数上限を確認する
+- 制限値は `plans` テーブルから動的に取得する（ハードコードしない）
+- enterprise プランは `plans` テーブルに workspace ごとのカスタム行を追加する
+
+### プランのアップグレード
+
+- 初期実装では手動対応（管理者が BQ の `workspaces.plan` を更新する）
+- 将来的に Stripe 等の決済サービスと連携する
+
+---
+
 ## Authentication Policy
 
 ### 初期（MVP）

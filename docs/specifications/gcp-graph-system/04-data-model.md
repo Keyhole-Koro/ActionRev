@@ -9,8 +9,8 @@
 | workspace_id | STRING | ワークスペース識別子 |
 | name | STRING | ワークスペース名 |
 | owner_id | STRING | オーナーのユーザーID（Firebase Auth UID） |
+| plan | STRING | `free` / `pro` / `enterprise` |
 | storage_used_bytes | INT64 | 使用済みストレージ容量 |
-| storage_quota_bytes | INT64 | ストレージ上限（デフォルト: 5GB） |
 | created_at | TIMESTAMP | 作成日時 |
 | updated_at | TIMESTAMP | 更新日時 |
 
@@ -175,6 +175,29 @@
 ### graph_snapshots
 
 - 再処理前後の結果比較に利用する
+
+### plans
+
+プランごとの制限値を管理する設定テーブル。
+
+| Column | Type | Description |
+| --- | --- | --- |
+| plan | STRING | `free` / `pro` / `enterprise` |
+| storage_quota_bytes | INT64 | ストレージ上限 |
+| max_file_size_bytes | INT64 | 1ファイルあたりの上限サイズ |
+| max_uploads_per_day | INT64 | 1日あたりのアップロード上限 |
+| max_members | INT64 | workspace メンバー上限 |
+| allowed_extraction_depths | STRING | 使用可能な extraction_depth（カンマ区切り） |
+
+#### デフォルト値
+
+| | free | pro | enterprise |
+| --- | --- | --- | --- |
+| storage_quota_bytes | 1GB | 20GB | カスタム |
+| max_file_size_bytes | 10MB | 200MB | カスタム |
+| max_uploads_per_day | 10 | 200 | カスタム |
+| max_members | 3 | 20 | カスタム |
+| allowed_extraction_depths | `summary` | `full,summary` | `full,summary` |
 
 ### normalization_tools
 

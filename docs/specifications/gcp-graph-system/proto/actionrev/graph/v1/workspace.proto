@@ -20,9 +20,19 @@ message Workspace {
   string workspace_id = 1;
   string name = 2;
   string owner_id = 3;
-  int64 storage_used_bytes = 4;
-  int64 storage_quota_bytes = 5;
-  string created_at = 6;
+  WorkspacePlan plan = 4;
+  int64 storage_used_bytes = 5;
+  int64 storage_quota_bytes = 6;  // plans テーブルから取得して返す
+  int64 max_file_size_bytes = 7;
+  int64 max_uploads_per_day = 8;
+  string created_at = 9;
+}
+
+enum WorkspacePlan {
+  WORKSPACE_PLAN_UNSPECIFIED = 0;
+  WORKSPACE_PLAN_FREE = 1;
+  WORKSPACE_PLAN_PRO = 2;
+  WORKSPACE_PLAN_ENTERPRISE = 3;
 }
 
 message WorkspaceMember {
