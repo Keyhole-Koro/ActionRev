@@ -28,7 +28,7 @@
 - document 単位で処理開始、成功、失敗を記録する
 - RPC メソッド単位でレイテンシと失敗率を記録する
 - job 単位で開始、完了、失敗を記録する
-- ツール生成、承認、dry-run、本実行のイベントを記録する
+- ツール生成、dry-run、本実行のイベントを記録する
 
 ### Future Monitoring
 
@@ -88,7 +88,19 @@
 - **Firebase Auth + Google OAuth** を導入する（Firebase Hosting との親和性が高い）
 - フロントエンドで Google ログインを要求し、ID トークンを Connect RPC のヘッダに付与する
 - バックエンドでトークンを検証し、未認証リクエストを拒否する
-- ドキュメント単位のアクセス制御は認証導入後の次フェーズで対応する
+- アクセス制御は workspace + role ベースで行う（詳細は下記）
+
+### Workspace とロール
+
+- ユーザーは1つ以上の workspace に所属する
+- workspace 内のロールは `editor` / `viewer` の2種
+- `/dev/stats` は Firebase Auth カスタムクレーム `role: "dev"` を持つユーザーのみアクセス可能
+
+| ロール | 権限 |
+| --- | --- |
+| `editor` | ドキュメントのアップロード・削除・処理実行・メンバー招待 |
+| `viewer` | グラフ閲覧のみ |
+| `dev` | `/dev/stats` アクセス（editor/viewer に追加付与） |
 
 ---
 

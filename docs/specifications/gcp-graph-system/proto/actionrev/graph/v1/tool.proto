@@ -40,7 +40,6 @@ message SaveNormalizationToolResponse {
 
 message ListNormalizationToolsRequest {
   string file_type = 1;
-  ToolApprovalStatus approval_status = 2;
 }
 
 message ListNormalizationToolsResponse {

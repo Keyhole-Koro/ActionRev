@@ -18,8 +18,8 @@
 2. LLM が Python スクリプト案を生成する
 3. サンドボックスで dry-run する
 4. 差分とログを確認する
-5. 保存して version を付与する
-6. 承認済みツールとして再利用する
+5. 保存して version を付与する（承認フローなし、dry-run 確認で十分）
+6. 再利用する
 7. 必要に応じて改訂、廃止する
 
 ## Tool Package Layout
@@ -57,12 +57,13 @@ tools/
 - 読み取りと書き込みの対象ディレクトリを限定する
 - dry-run と本実行を明確に分離する
 
-## Approval States
+## Tool States
 
-- `draft`
-- `reviewed`
-- `approved`
-- `deprecated`
+approval フローは不要。dry-run 確認で十分とする。
+
+- `draft` : 生成直後
+- `active` : dry-run 確認済み・使用中
+- `deprecated` : 廃止
 
 ## Outputs
 
@@ -81,7 +82,6 @@ tools/
 ## Mitigations
 
 - サンドボックス実行
-- approval 状態を必須にする
 - 原本は必ず保持する
 - dry-run を標準フローにする
 - 変換前後差分を保存する

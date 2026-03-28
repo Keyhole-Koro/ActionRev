@@ -2,11 +2,39 @@
 
 ## Tables
 
+### workspaces
+
+| Column | Type | Description |
+| --- | --- | --- |
+| workspace_id | STRING | ワークスペース識別子 |
+| name | STRING | ワークスペース名 |
+| owner_id | STRING | オーナーのユーザーID（Firebase Auth UID） |
+| storage_used_bytes | INT64 | 使用済みストレージ容量 |
+| storage_quota_bytes | INT64 | ストレージ上限（デフォルト: 5GB） |
+| created_at | TIMESTAMP | 作成日時 |
+| updated_at | TIMESTAMP | 更新日時 |
+
+### workspace_members
+
+| Column | Type | Description |
+| --- | --- | --- |
+| workspace_id | STRING | ワークスペース識別子 |
+| user_id | STRING | メンバーのユーザーID |
+| role | STRING | `editor` / `viewer` |
+| invited_at | TIMESTAMP | 招待日時 |
+
+#### Role Values
+
+- `editor` : ドキュメントのアップロード・削除・処理実行が可能
+- `viewer` : グラフの閲覧のみ可能
+
 ### documents
 
 | Column | Type | Description |
 | --- | --- | --- |
 | document_id | STRING | ドキュメント識別子 |
+| workspace_id | STRING | 所属ワークスペース識別子 |
+| uploaded_by | STRING | アップロードしたユーザーID |
 | filename | STRING | 元ファイル名 |
 | gcs_uri | STRING | 保存先 URI |
 | mime_type | STRING | MIME type |
