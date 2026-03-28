@@ -14,12 +14,12 @@ locals {
   backend_roles = [
     "roles/bigquery.dataEditor",
     "roles/bigquery.jobUser",
-    "roles/storage.objectAdmin",       # 署名付き URL 発行 (iam.serviceAccounts.signBlob)
-    "roles/aiplatform.user",           # Vertex AI / Gemini
+    "roles/storage.objectAdmin",
+    "roles/aiplatform.user",
     "roles/secretmanager.secretAccessor",
     "roles/cloudtasks.enqueuer",
-    "roles/run.invoker",               # Cloud Run Job 起動
-    "roles/iam.serviceAccountTokenCreator", # 署名付き URL 発行に必要
+    "roles/run.invoker",
+    "roles/iam.serviceAccountTokenCreator",  # 署名付き URL 発行
   ]
 }
 
@@ -30,14 +30,6 @@ resource "google_project_iam_member" "backend" {
   member   = "serviceAccount:${google_service_account.backend.email}"
 }
 
-# sandbox SA はサンドボックスバケットのみアクセス可
-resource "google_storage_bucket_iam_member" "sandbox_bucket" {
-  bucket = var.sandbox_bucket_name
-  role   = "roles/storage.objectUser"
-  member = "serviceAccount:${google_service_account.sandbox.email}"
-}
-
-# Cloud Build に Artifact Registry write + Cloud Run デプロイ権限
 data "google_project" "current" { project_id = var.project_id }
 
 resource "google_project_iam_member" "cloudbuild_ar" {

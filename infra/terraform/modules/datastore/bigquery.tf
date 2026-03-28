@@ -1,5 +1,5 @@
 resource "google_bigquery_dataset" "graph" {
-  dataset_id                 = var.dataset_id
+  dataset_id                 = "graph"
   friendly_name              = "ActionRev Graph"
   location                   = var.region
   delete_contents_on_destroy = false
@@ -18,7 +18,7 @@ resource "google_bigquery_table" "users" {
     { name = "user_id",       type = "STRING",    mode = "REQUIRED", description = "Firebase Auth UID" },
     { name = "email",         type = "STRING",    mode = "NULLABLE" },
     { name = "display_name",  type = "STRING",    mode = "NULLABLE" },
-    { name = "created_at",    type = "TIMESTAMP", mode = "NULLABLE", description = "初回ログイン日時" },
+    { name = "created_at",    type = "TIMESTAMP", mode = "NULLABLE" },
     { name = "last_login_at", type = "TIMESTAMP", mode = "NULLABLE" },
   ])
   time_partitioning { type = "MONTH"; field = "created_at" }
@@ -77,14 +77,14 @@ resource "google_bigquery_table" "document_chunks" {
   dataset_id = local.ds
   table_id   = "document_chunks"
   schema = jsonencode([
-    { name = "document_id",         type = "STRING", mode = "REQUIRED" },
-    { name = "chunk_id",            type = "STRING", mode = "REQUIRED" },
-    { name = "chunk_index",         type = "INT64",  mode = "NULLABLE" },
-    { name = "text",                type = "STRING", mode = "NULLABLE" },
-    { name = "source_filename",     type = "STRING", mode = "NULLABLE", description = "zip 展開後ファイル名" },
-    { name = "source_page",         type = "INT64",  mode = "NULLABLE" },
-    { name = "source_offset_start", type = "INT64",  mode = "NULLABLE" },
-    { name = "source_offset_end",   type = "INT64",  mode = "NULLABLE" },
+    { name = "document_id",          type = "STRING", mode = "REQUIRED" },
+    { name = "chunk_id",             type = "STRING", mode = "REQUIRED" },
+    { name = "chunk_index",          type = "INT64",  mode = "NULLABLE" },
+    { name = "text",                 type = "STRING", mode = "NULLABLE" },
+    { name = "source_filename",      type = "STRING", mode = "NULLABLE", description = "zip 展開後ファイル名" },
+    { name = "source_page",          type = "INT64",  mode = "NULLABLE" },
+    { name = "source_offset_start",  type = "INT64",  mode = "NULLABLE" },
+    { name = "source_offset_end",    type = "INT64",  mode = "NULLABLE" },
   ])
 }
 
@@ -93,17 +93,17 @@ resource "google_bigquery_table" "nodes" {
   table_id            = "nodes"
   deletion_protection = true
   schema = jsonencode([
-    { name = "document_id",    type = "STRING",  mode = "REQUIRED" },
-    { name = "node_id",        type = "STRING",  mode = "REQUIRED" },
-    { name = "label",          type = "STRING",  mode = "NULLABLE" },
-    { name = "level",          type = "INT64",   mode = "NULLABLE", description = "0=ドメイン 1=概念 2=施策 3=詳細" },
-    { name = "category",       type = "STRING",  mode = "NULLABLE", description = "concept / entity / claim / evidence / counter" },
-    { name = "entity_type",    type = "STRING",  mode = "NULLABLE", description = "organization / person / metric / date" },
-    { name = "description",    type = "STRING",  mode = "NULLABLE" },
-    { name = "summary_html",   type = "STRING",  mode = "NULLABLE", description = "iframe 向け HTML サマリ" },
-    { name = "source_chunk_id",type = "STRING",  mode = "NULLABLE" },
-    { name = "confidence",     type = "FLOAT64", mode = "NULLABLE" },
-    { name = "created_at",     type = "TIMESTAMP", mode = "NULLABLE" },
+    { name = "document_id",     type = "STRING",  mode = "REQUIRED" },
+    { name = "node_id",         type = "STRING",  mode = "REQUIRED" },
+    { name = "label",           type = "STRING",  mode = "NULLABLE" },
+    { name = "level",           type = "INT64",   mode = "NULLABLE", description = "0=ドメイン 1=概念 2=施策 3=詳細" },
+    { name = "category",        type = "STRING",  mode = "NULLABLE", description = "concept / entity / claim / evidence / counter" },
+    { name = "entity_type",     type = "STRING",  mode = "NULLABLE" },
+    { name = "description",     type = "STRING",  mode = "NULLABLE" },
+    { name = "summary_html",    type = "STRING",  mode = "NULLABLE" },
+    { name = "source_chunk_id", type = "STRING",  mode = "NULLABLE" },
+    { name = "confidence",      type = "FLOAT64", mode = "NULLABLE" },
+    { name = "created_at",      type = "TIMESTAMP", mode = "NULLABLE" },
   ])
   time_partitioning { type = "DAY"; field = "created_at" }
 }
@@ -113,15 +113,15 @@ resource "google_bigquery_table" "edges" {
   table_id            = "edges"
   deletion_protection = true
   schema = jsonencode([
-    { name = "document_id",    type = "STRING",  mode = "REQUIRED" },
-    { name = "edge_id",        type = "STRING",  mode = "REQUIRED" },
-    { name = "source_node_id", type = "STRING",  mode = "NULLABLE" },
-    { name = "target_node_id", type = "STRING",  mode = "NULLABLE" },
-    { name = "edge_type",      type = "STRING",  mode = "NULLABLE", description = "hierarchical / supports / contradicts / related_to / measured_by / involves / causes / exemplifies" },
-    { name = "description",    type = "STRING",  mode = "NULLABLE" },
-    { name = "weight",         type = "FLOAT64", mode = "NULLABLE" },
-    { name = "source_chunk_id",type = "STRING",  mode = "NULLABLE" },
-    { name = "created_at",     type = "TIMESTAMP", mode = "NULLABLE" },
+    { name = "document_id",     type = "STRING",  mode = "REQUIRED" },
+    { name = "edge_id",         type = "STRING",  mode = "REQUIRED" },
+    { name = "source_node_id",  type = "STRING",  mode = "NULLABLE" },
+    { name = "target_node_id",  type = "STRING",  mode = "NULLABLE" },
+    { name = "edge_type",       type = "STRING",  mode = "NULLABLE", description = "hierarchical / supports / contradicts / related_to / measured_by / involves / causes / exemplifies" },
+    { name = "description",     type = "STRING",  mode = "NULLABLE" },
+    { name = "weight",          type = "FLOAT64", mode = "NULLABLE" },
+    { name = "source_chunk_id", type = "STRING",  mode = "NULLABLE" },
+    { name = "created_at",      type = "TIMESTAMP", mode = "NULLABLE" },
   ])
   time_partitioning { type = "DAY"; field = "created_at" }
 }
@@ -171,6 +171,6 @@ resource "google_bigquery_table" "plans" {
     { name = "max_file_size_bytes",       type = "INT64",  mode = "NULLABLE" },
     { name = "max_uploads_per_day",       type = "INT64",  mode = "NULLABLE" },
     { name = "max_members",               type = "INT64",  mode = "NULLABLE" },
-    { name = "allowed_extraction_depths", type = "STRING", mode = "NULLABLE", description = "カンマ区切り" },
+    { name = "allowed_extraction_depths", type = "STRING", mode = "NULLABLE" },
   ])
 }

@@ -12,8 +12,7 @@ terraform {
     }
   }
 
-  # 初期化時に -backend-config=backends/<env>.hcl を指定する
-  # 例: terraform init -backend-config=backends/stage.hcl
+  # terraform init -backend-config=backends/<env>.hcl
   backend "gcs" {}
 }
 
@@ -64,101 +63,58 @@ resource "google_project_service" "apis" {
 }
 
 # ---------------------------------------------------------------------------
-# Artifact Registry
-# ---------------------------------------------------------------------------
-
-resource "google_artifact_registry_repository" "actionrev" {
-  repository_id = "actionrev"
-  location      = var.region
-  format        = "DOCKER"
-  description   = "ActionRev Docker images"
-  labels        = local.labels
-
-  cleanup_policies {
-    id     = "keep-latest-10"
-    action = "KEEP"
-    most_recent_versions { keep_count = 10 }
-  }
-
-  cleanup_policies {
-    id     = "delete-untagged-after-30d"
-    action = "DELETE"
-    condition {
-      tag_state  = "UNTAGGED"
-      older_than = "2592000s"
-    }
-  }
-
-  depends_on = [google_project_service.apis]
-}
-
-# ---------------------------------------------------------------------------
 # Modules
+# 依存関係: platform → pipeline → api
+#           datastore は独立
 # ---------------------------------------------------------------------------
 
-module "storage" {
-  source              = "./modules/storage"
-  project_id          = var.project_id
-  region              = var.region
-  env                 = var.env
-  labels              = local.labels
-  uploads_bucket_name = var.uploads_bucket_name
-  depends_on          = [google_project_service.apis]
-}
-
-module "bigquery" {
-  source     = "./modules/bigquery"
+module "platform" {
+  source     = "./modules/platform"
   project_id = var.project_id
   region     = var.region
-  dataset_id = var.bigquery_dataset_id
   labels     = local.labels
   depends_on = [google_project_service.apis]
 }
 
-module "iam" {
-  source              = "./modules/iam"
-  project_id          = var.project_id
-  sandbox_bucket_name = module.storage.sandbox_bucket_name
-  depends_on          = [google_project_service.apis]
-}
-
-module "secrets" {
-  source     = "./modules/secrets"
+module "datastore" {
+  source     = "./modules/datastore"
   project_id = var.project_id
+  region     = var.region
   labels     = local.labels
   depends_on = [google_project_service.apis]
 }
 
-module "tasks" {
-  source     = "./modules/tasks"
-  project_id = var.project_id
-  region     = var.region
-  env        = var.env
-  depends_on = [google_project_service.apis]
+module "pipeline" {
+  source            = "./modules/pipeline"
+  project_id        = var.project_id
+  region            = var.region
+  env               = var.env
+  labels            = local.labels
+  sandbox_sa_email  = module.platform.sandbox_sa_email
+  depends_on        = [module.platform]
 }
 
-module "cloudrun" {
-  source               = "./modules/cloudrun"
+module "api" {
+  source               = "./modules/api"
   project_id           = var.project_id
   region               = var.region
   env                  = var.env
   labels               = local.labels
   backend_image        = var.backend_image
-  sandbox_image        = var.sandbox_image
-  backend_sa_email     = module.iam.backend_sa_email
-  sandbox_sa_email     = module.iam.sandbox_sa_email
-  uploads_bucket_name  = module.storage.uploads_bucket_name
-  sandbox_bucket_name  = module.storage.sandbox_bucket_name
-  bigquery_dataset_id  = module.bigquery.dataset_id
-  cloud_tasks_queue    = module.tasks.queue_name
+  backend_sa_email     = module.platform.backend_sa_email
+  uploads_bucket_name  = module.datastore.uploads_bucket_name
+  bigquery_dataset_id  = module.datastore.dataset_id
+  cloud_tasks_queue    = module.pipeline.queue_name
+  sandbox_job_name     = module.pipeline.sandbox_job_name
+  sandbox_bucket_name  = module.pipeline.sandbox_bucket_name
   min_instances        = var.backend_min_instances
   max_instances        = var.backend_max_instances
   gemini_model         = var.gemini_model
 
-  stripe_secret_key_id          = module.secrets.stripe_secret_key_id
-  stripe_webhook_secret_id      = module.secrets.stripe_webhook_secret_id
-  discord_webhook_url_id        = module.secrets.discord_webhook_url_id
-  firebase_admin_credentials_id = module.secrets.firebase_admin_credentials_id
+  stripe_secret_key_id          = module.platform.stripe_secret_key_id
+  stripe_webhook_secret_id      = module.platform.stripe_webhook_secret_id
+  discord_webhook_url_id        = module.platform.discord_webhook_url_id
+  firebase_admin_credentials_id = module.platform.firebase_admin_credentials_id
 
-  depends_on = [module.iam, module.secrets]
+  depends_on = [module.platform, module.pipeline, module.datastore]
 }
