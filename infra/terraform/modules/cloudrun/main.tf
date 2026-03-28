@@ -43,7 +43,7 @@ resource "google_cloud_run_v2_service" "backend" {
       env { name = "SANDBOX_BUCKET";        value = var.sandbox_bucket_name }
 
       # --- Gemini response cache (本番では無効) ---
-      env { name = "GEMINI_CACHE_ENABLED";  value = "false" }
+      env { name = "GEMINI_CACHE_ENABLED"; value = "false" }
 
       # --- Secrets from Secret Manager ---
       env {
