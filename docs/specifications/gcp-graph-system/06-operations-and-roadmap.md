@@ -76,13 +76,70 @@
 - `Spanner Graph` への移行または併用
 - 高度なグラフ探索 API の追加
 
+## Authentication Policy
+
+### 初期（MVP）
+
+- 認証なし。GCP IAM によるサービス間アクセス制御のみ
+- Cloud Run エンドポイントは内部ネットワークまたは固定 IP からのアクセスに限定する
+
+### β公開前
+
+- **Firebase Auth + Google OAuth** を導入する（Firebase Hosting との親和性が高い）
+- フロントエンドで Google ログインを要求し、ID トークンを Connect RPC のヘッダに付与する
+- バックエンドでトークンを検証し、未認証リクエストを拒否する
+- ドキュメント単位のアクセス制御は認証導入後の次フェーズで対応する
+
+---
+
+## CI/CD Pipeline
+
+GitHub Actions で Backend・Frontend・Proto の3系統を管理する。
+
+### Backend（Cloud Run）
+
+```
+push to main:
+  1. go test（ユニット・結合テスト）
+  2. docker build
+  3. Artifact Registry へ push
+  4. Cloud Run へ deploy
+```
+
+### Frontend（Firebase Hosting）
+
+```
+push to main:
+  1. npm ci
+  2. npm run build
+  3. firebase deploy --only hosting
+```
+
+### Proto（buf）
+
+```
+PR 作成時:
+  1. buf lint（proto の文法・スタイル検査）
+  2. buf breaking（後方互換性チェック）
+
+push to main:
+  1. buf generate（Go / TypeScript コード生成）
+  2. 生成コードをリポジトリに commit
+```
+
+### 評価データ定期実行
+
+```
+毎週月曜 0:00:
+  1. gold document セットを使い抽出パイプラインを実行（Gemini モック）
+  2. 指標（Precision / Recall / level 一致率）を BigQuery に記録
+  3. 前週比で 5% 以上劣化した場合に Slack 通知
+```
+
+---
+
 ## Open Issues
 
 - PDF の抽出品質をどのライブラリで担保するか
 - 正規化ツールの approval workflow をどこまで厳密にするか
-- Gemini の出力スキーマとリトライ戦略の詳細
-- ノード統合ルールの厳密度
-- フロントの可視化ライブラリ選定
-- 認証導入のタイミング
 - ファイル upload を RPC 本体で扱うか、署名付き URL に切るか
-- proto の package 分割方針
