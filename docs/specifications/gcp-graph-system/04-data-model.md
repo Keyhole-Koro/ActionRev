@@ -12,6 +12,7 @@
 | mime_type | STRING | MIME type |
 | file_size | INT64 | ファイルサイズ |
 | status | STRING | 処理状態 |
+| extraction_depth | STRING | 抽出粒度（`full` / `summary`）。デフォルトは `full` |
 | created_at | TIMESTAMP | 作成日時 |
 | updated_at | TIMESTAMP | 更新日時 |
 
