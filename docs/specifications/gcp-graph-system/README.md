@@ -14,6 +14,9 @@
 - [06-operations-and-roadmap.md](/home/unix/ActionRev/docs/specifications/gcp-graph-system/06-operations-and-roadmap.md)
 - [08-ai-pipeline.md](/home/unix/ActionRev/docs/specifications/gcp-graph-system/08-ai-pipeline.md)
 - [09-normalization-tools.md](/home/unix/ActionRev/docs/specifications/gcp-graph-system/09-normalization-tools.md)
+- [10-topic-mapping.md](/home/unix/ActionRev/docs/specifications/gcp-graph-system/10-topic-mapping.md)
+- [11-graph-algorithms.md](/home/unix/ActionRev/docs/specifications/gcp-graph-system/11-graph-algorithms.md)
+- [12-extraction-strategy.md](/home/unix/ActionRev/docs/specifications/gcp-graph-system/12-extraction-strategy.md)
 - [proto/README.md](/home/unix/ActionRev/docs/specifications/gcp-graph-system/proto/README.md)
 
 ## Document Control
