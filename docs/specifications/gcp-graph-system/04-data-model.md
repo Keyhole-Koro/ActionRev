@@ -47,6 +47,7 @@
 #### Status Values
 
 - `uploaded`
+- `pending_normalization` : 正規化ツールの承認待ちで処理を停止中
 - `processing`
 - `completed`
 - `failed`
@@ -177,7 +178,20 @@
 
 ### normalization_tools
 
-- LLM または人手で作成した正規化ツールの定義保存に利用する
+| Column | Type | Description |
+| --- | --- | --- |
+| tool_id | STRING | ツール識別子 |
+| name | STRING | ツール名 |
+| version | STRING | バージョン |
+| description | STRING | 説明 |
+| problem_pattern | STRING | 対処する問題パターン（自動マッチング用） |
+| approval_status | STRING | `draft` / `reviewed` / `approved` / `deprecated` |
+| approved_by | STRING | `llm` / `human` |
+| llm_review_score | FLOAT64 | LLM 自動レビューの信頼スコア（0〜1） |
+| llm_review_reason | STRING | LLM の判定理由 |
+| created_by | STRING | 作成者ユーザーID |
+| created_at | TIMESTAMP | 作成日時 |
+| updated_at | TIMESTAMP | 更新日時 |
 
 ### normalization_tool_runs
 

@@ -75,12 +75,16 @@ message NormalizationTool {
   string name = 2;
   string version = 3;
   string description = 4;
-  string entrypoint = 5;
-  repeated string allowed_file_types = 6;
-  ToolApprovalStatus approval_status = 7;
-  string created_by = 8;
-  string created_at = 9;
-  string updated_at = 10;
+  string problem_pattern = 5;
+  string entrypoint = 6;
+  repeated string allowed_file_types = 7;
+  ToolApprovalStatus approval_status = 8;
+  string approved_by = 9;       // "llm" or "human"
+  double llm_review_score = 10;
+  string llm_review_reason = 11;
+  string created_by = 12;
+  string created_at = 13;
+  string updated_at = 14;
 }
 
 message NormalizationToolRun {
@@ -102,9 +106,10 @@ message NormalizationToolRun {
 enum DocumentStatus {
   DOCUMENT_STATUS_UNSPECIFIED = 0;
   DOCUMENT_STATUS_UPLOADED = 1;
-  DOCUMENT_STATUS_PROCESSING = 2;
-  DOCUMENT_STATUS_COMPLETED = 3;
-  DOCUMENT_STATUS_FAILED = 4;
+  DOCUMENT_STATUS_PENDING_NORMALIZATION = 2; // 正規化ツールの承認待ち
+  DOCUMENT_STATUS_PROCESSING = 3;
+  DOCUMENT_STATUS_COMPLETED = 4;
+  DOCUMENT_STATUS_FAILED = 5;
 }
 
 // Deprecated: abstract/concrete の2値分類は廃止。NodeCategory と level を使用する。

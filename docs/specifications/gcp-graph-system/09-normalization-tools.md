@@ -38,12 +38,16 @@
 ## Tool Lifecycle
 
 1. 問題ドキュメントまたは問題説明を管理者が入力する
-2. LLM が Python スクリプト案を生成する（`draft`）
-3. サンドボックスで dry-run し、変換差分を確認する
-4. 管理者がレビュー（`reviewed`）
-5. 管理者が承認（`approved`）← ここで初めて本番適用可能になる
-6. 同パターンの問題に自動・手動で再利用する
-7. 必要に応じて改訂（version を上げる）、廃止（`deprecated`）
+2. LLM がスクリプト案を生成する（`draft`）
+3. サンドボックスで dry-run し、差分を確認する
+4. **LLM が自動レビューを実行する**
+   - 安全性・正確性・dry-run 妥当性・fixture 一致を判定
+   - スコア 0.9 以上 → 自動 `approved`（`approved_by: "llm"`）
+   - スコア 0.9 未満 or 危険コード検出 → `reviewed` に留まり人間レビュー待ち
+5. 管理者が `reviewed` のツールを確認し手動承認（`approved_by: "human"`）
+6. `approved` になった時点でドキュメント処理が再開される
+7. 同パターンの問題に自動・手動で再利用する
+8. 必要に応じて改訂（version を上げる）、廃止（`deprecated`）
 
 ---
 
@@ -94,9 +98,20 @@ tools/
 ## Approval States
 
 - `draft` : LLM 生成直後
-- `reviewed` : dry-run 確認済み・管理者レビュー完了
-- `approved` : 承認済み（本番適用可能）
+- `reviewed` : dry-run 確認済み・LLM スコアが閾値未満のため人間レビュー待ち
+- `approved` : 承認済み（本番適用可能）。`approved_by` が `llm` または `human`
 - `deprecated` : 廃止
+
+## LLM 自動レビューの判定基準
+
+| チェック項目 | 内容 |
+| --- | --- |
+| 安全性 | subprocess・ネットワーク・許可外ファイル書き込みがないか |
+| 正確性 | problem_pattern の説明通りの変換をしているか |
+| dry-run 妥当性 | 変換差分が意図した内容か、変更量が過大でないか |
+| fixture 一致 | input → expected の変換が再現できるか |
+
+スコアが 0.9 以上かつ危険コードなしの場合に自動承認する。
 
 ---
 
