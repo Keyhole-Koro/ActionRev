@@ -1,0 +1,13 @@
+# このファイルを terraform.tfvars にコピーして値を埋める
+# terraform.tfvars は .gitignore に追加すること
+
+project_id    = "your-gcp-project-id"
+region        = "asia-northeast1"
+env           = "dev"
+
+backend_image = "asia-northeast1-docker.pkg.dev/your-gcp-project-id/actionrev/backend:latest"
+sandbox_image = "asia-northeast1-docker.pkg.dev/your-gcp-project-id/actionrev/sandbox:latest"
+
+# prod 環境ではコールドスタートを避けるために 1 以上を設定する
+backend_min_instances = 0
+backend_max_instances = 10
