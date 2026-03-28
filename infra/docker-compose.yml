@@ -1,7 +1,8 @@
 version: "3.9"
 
 # ローカル開発環境
-# Vertex AI (Gemini) はエミュレータが存在しないため、バックエンド側でモックに切り替えること
+# Vertex AI (Gemini) はエミュレータが存在しないため、実際の GCP プロジェクトを使用する
+# Gemini キャッシュ (GEMINI_CACHE_ENABLED=true) で API コストを節約できる
 # Stripe は本家テストモードキー (sk_test_...) をそのまま使用する
 
 services:
@@ -32,6 +33,8 @@ services:
     volumes:
       - ../backend:/app
       - go-mod-cache:/root/go/pkg/mod
+      # Gemini レスポンスキャッシュ: リポジトリルートの .gemini-cache/ をマウント
+      - ../.gemini-cache:/app/.gemini-cache
     networks:
       - actionrev
 

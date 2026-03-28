@@ -10,18 +10,17 @@ variable "region" {
 }
 
 variable "env" {
-  description = "デプロイ環境 (dev / prod)"
+  description = "デプロイ環境"
   type        = string
   validation {
-    condition     = contains(["dev", "prod"], var.env)
-    error_message = "env は dev または prod のみ使用可能。"
+    condition     = contains(["local", "stage", "prod"], var.env)
+    error_message = "env は local / stage / prod のみ使用可能。"
   }
 }
 
 variable "backend_image" {
   description = "Cloud Run バックエンドの Docker イメージ URI"
   type        = string
-  # 例: asia-northeast1-docker.pkg.dev/<project>/actionrev/backend:latest
 }
 
 variable "sandbox_image" {
@@ -30,25 +29,27 @@ variable "sandbox_image" {
 }
 
 variable "backend_min_instances" {
-  description = "Cloud Run バックエンドの最小インスタンス数 (cold start 対策)"
-  type        = number
-  default     = 0
+  type    = number
+  default = 0
 }
 
 variable "backend_max_instances" {
-  description = "Cloud Run バックエンドの最大インスタンス数"
-  type        = number
-  default     = 10
+  type    = number
+  default = 10
 }
 
 variable "bigquery_dataset_id" {
-  description = "BigQuery データセット ID"
-  type        = string
-  default     = "graph"
+  type    = string
+  default = "graph"
 }
 
-variable "gcs_uploads_bucket" {
-  description = "アップロードファイル保存バケット名 (空の場合は自動生成)"
+variable "uploads_bucket_name" {
+  description = "空の場合は <project_id>-uploads-<env> を自動生成"
   type        = string
   default     = ""
+}
+
+variable "gemini_model" {
+  type    = string
+  default = "gemini-2.0-flash-001"
 }
