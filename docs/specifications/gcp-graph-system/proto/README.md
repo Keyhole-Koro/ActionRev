@@ -7,12 +7,13 @@
 ## Layout
 
 - [actionrev/graph/v1/common.proto](/home/unix/ActionRev/docs/specifications/gcp-graph-system/proto/actionrev/graph/v1/common.proto)
+- [actionrev/graph/v1/user.proto](/home/unix/ActionRev/docs/specifications/gcp-graph-system/proto/actionrev/graph/v1/user.proto)
+- [actionrev/graph/v1/workspace.proto](/home/unix/ActionRev/docs/specifications/gcp-graph-system/proto/actionrev/graph/v1/workspace.proto)
 - [actionrev/graph/v1/document.proto](/home/unix/ActionRev/docs/specifications/gcp-graph-system/proto/actionrev/graph/v1/document.proto)
 - [actionrev/graph/v1/graph.proto](/home/unix/ActionRev/docs/specifications/gcp-graph-system/proto/actionrev/graph/v1/graph.proto)
 - [actionrev/graph/v1/node.proto](/home/unix/ActionRev/docs/specifications/gcp-graph-system/proto/actionrev/graph/v1/node.proto)
 - [actionrev/graph/v1/job.proto](/home/unix/ActionRev/docs/specifications/gcp-graph-system/proto/actionrev/graph/v1/job.proto)
 - [actionrev/graph/v1/tool.proto](/home/unix/ActionRev/docs/specifications/gcp-graph-system/proto/actionrev/graph/v1/tool.proto)
-- [actionrev/graph/v1/workspace.proto](/home/unix/ActionRev/docs/specifications/gcp-graph-system/proto/actionrev/graph/v1/workspace.proto)
 
 ## Design Policy
 

@@ -2,6 +2,40 @@
 
 ## Tables
 
+### users
+
+Firebase Auth でログインした際に初回のみ自動作成する。
+
+| Column | Type | Description |
+| --- | --- | --- |
+| user_id | STRING | Firebase Auth UID |
+| email | STRING | メールアドレス |
+| display_name | STRING | 表示名 |
+| created_at | TIMESTAMP | 初回ログイン日時 |
+| last_login_at | TIMESTAMP | 最終ログイン日時 |
+
+### user と workspace の関係
+
+```
+User
+  │ 1
+  │ ├─ 複数の workspace を作成できる（owner）
+  │ │      workspaces.owner_id = user_id
+  │ │
+  │ └─ 複数の workspace にメンバーとして参加できる
+  │        workspace_members.user_id = user_id
+  │ *
+Workspace
+  │ 1
+  └─ 複数の document を持つ
+         documents.workspace_id = workspace_id
+```
+
+- 1ユーザーは複数の workspace を作成できる
+- 1ユーザーは複数の workspace にメンバーとして参加できる
+- 1つの workspace は複数の document を持つ
+- workspace の作成者は自動で `editor` として `workspace_members` に登録される
+
 ### workspaces
 
 | Column | Type | Description |
