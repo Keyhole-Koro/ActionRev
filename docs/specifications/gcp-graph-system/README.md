@@ -17,6 +17,8 @@
 - [10-topic-mapping.md](/home/unix/ActionRev/docs/specifications/gcp-graph-system/10-topic-mapping.md)
 - [11-graph-algorithms.md](/home/unix/ActionRev/docs/specifications/gcp-graph-system/11-graph-algorithms.md)
 - [12-extraction-strategy.md](/home/unix/ActionRev/docs/specifications/gcp-graph-system/12-extraction-strategy.md)
+- [13-evaluation-data.md](/home/unix/ActionRev/docs/specifications/gcp-graph-system/13-evaluation-data.md)
+- [14-testing-strategy.md](/home/unix/ActionRev/docs/specifications/gcp-graph-system/14-testing-strategy.md)
 - [proto/README.md](/home/unix/ActionRev/docs/specifications/gcp-graph-system/proto/README.md)
 
 ## Document Control
