@@ -17,7 +17,7 @@
 
 #### Status Values
 
-- `uploaded`
+- `uploaded` : メタデータ登録とファイル upload 完了後、解析開始前
 - `processing`
 - `completed`
 - `failed`
@@ -95,8 +95,6 @@
 - `causes` : concept が別の concept を引き起こす
 - `exemplifies` : 上位概念の具体例
 
-> `abstract_to_concrete` は deprecated。新規データには `hierarchical` または `exemplifies` を使用する。
-
 ## Future Tables
 
 ### node_aliases
@@ -114,13 +112,13 @@
 
 ### document_topic_mappings
 
-ドキュメントとトピック（abstract ノード）の対応関係を保存する。詳細は [10-topic-mapping.md](10-topic-mapping.md) を参照。
+ドキュメントとトピック（`category=concept` かつ `level in (0, 1)` の canonical ノード）の対応関係を保存する。詳細は [10-topic-mapping.md](10-topic-mapping.md) を参照。
 
 | Column | Type | Description |
 | --- | --- | --- |
 | mapping_id | STRING | マッピング識別子 |
 | document_id | STRING | ドキュメント識別子 |
-| topic_node_id | STRING | トピック（abstract ノード）識別子 |
+| topic_node_id | STRING | トピックノード識別子 |
 | confidence | FLOAT64 | 信頼スコア |
 | reason | STRING | LLM による判定理由 |
 | method | STRING | `keyword` / `embedding` / `llm` / `manual` |

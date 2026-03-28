@@ -23,5 +23,5 @@
 
 ## Notes
 
-- 実ファイル upload は RPC 本体に載せず、署名付き URL 経由に切り出す前提でもよい
+- 実ファイル upload は RPC 本体に載せず、`CreateDocument` で発行した署名付き URL 経由で行う
 - `buf` の導入は後続タスクとし、ここでは `.proto` の契約を先に固定する

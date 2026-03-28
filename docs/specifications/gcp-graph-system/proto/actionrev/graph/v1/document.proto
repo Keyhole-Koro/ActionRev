@@ -17,11 +17,13 @@ message CreateDocumentRequest {
   string filename = 1;
   string mime_type = 2;
   int64 file_size = 3;
-  string upload_token = 4;
 }
 
 message CreateDocumentResponse {
   Document document = 1;
+  string upload_url = 2;
+  string upload_method = 3;
+  string upload_content_type = 4;
 }
 
 message GetDocumentRequest {
@@ -44,6 +46,7 @@ message ListDocumentsResponse {
 }
 
 message StartProcessingRequest {
+  // The target document must already be uploaded and currently be in uploaded status.
   string document_id = 1;
   bool force_reprocess = 2;
 }

@@ -19,6 +19,8 @@
 - `documents.status` を `failed` に更新する
 - 失敗理由をログに記録する
 - 再処理可能な設計とする
+- `StartProcessing` は upload 完了済みかつ `documents.status=uploaded` の document のみ受け付ける
+- upload 未完了や不正な状態遷移はジョブを起動せず、同期エラーとして返す
 
 ## Monitoring and Logging
 
@@ -84,5 +86,4 @@
 - ノード統合ルールの厳密度
 - フロントの可視化ライブラリ選定
 - 認証導入のタイミング
-- ファイル upload を RPC 本体で扱うか、署名付き URL に切るか
 - proto の package 分割方針
