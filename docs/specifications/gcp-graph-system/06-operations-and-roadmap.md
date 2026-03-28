@@ -106,13 +106,13 @@ Discord の Incoming Webhook を使って管理者チャンネルに通知する
 
 詳細な制限値は [04-data-model.md](04-data-model.md) の `plans` テーブルを参照。
 
-| | free | pro | enterprise |
-| --- | --- | --- | --- |
-| ストレージ | 1GB | 20GB | カスタム |
-| ファイルサイズ | 10MB | 200MB | カスタム |
-| アップロード/日 | 10件 | 200件 | カスタム |
-| メンバー数 | 3人 | 20人 | カスタム |
-| extraction_depth | `summary` のみ | `full` + `summary` | `full` + `summary` |
+| | free | pro |
+| --- | --- | --- |
+| ストレージ | 1GB | 20GB |
+| ファイルサイズ | 10MB | 200MB |
+| アップロード/日 | 10件 | 200件 |
+| メンバー数 | 3人 | 20人 |
+| extraction_depth | `summary` のみ | `full` + `summary` |
 
 ### 制限の適用方針
 
@@ -120,12 +120,47 @@ Discord の Incoming Webhook を使って管理者チャンネルに通知する
 - `StartProcessing` RPC で `extraction_depth` がプランで許可されているか確認する
 - `InviteMember` RPC でメンバー数上限を確認する
 - 制限値は `plans` テーブルから動的に取得する（ハードコードしない）
-- enterprise プランは `plans` テーブルに workspace ごとのカスタム行を追加する
 
-### プランのアップグレード
+### Stripe 課金実装
 
-- 初期実装では手動対応（管理者が BQ の `workspaces.plan` を更新する）
-- 将来的に Stripe 等の決済サービスと連携する
+#### フロー
+
+```
+[フロント: プランアップグレードボタン]
+    ↓
+[バックエンド: Stripe Checkout セッション作成]
+    ↓
+[Stripe ホスト画面でカード入力・決済]
+    ↓
+[Stripe → POST /billing/webhook]
+    ↓
+[署名検証 → workspaces.plan 更新]
+```
+
+ダウングレード・解約は Stripe Customer Portal をそのまま利用する（UI を自前で作らない）。
+
+#### バックエンドエンドポイント
+
+| エンドポイント | 処理 |
+| --- | --- |
+| `POST /billing/checkout` | Stripe Checkout セッション作成 → URL を返す |
+| `POST /billing/portal` | Stripe Customer Portal セッション作成 → URL を返す |
+| `POST /billing/webhook` | Stripe Webhook 受信・署名検証・plan 更新 |
+
+#### 受信する Webhook イベント
+
+| イベント | 処理 |
+| --- | --- |
+| `checkout.session.completed` | `workspaces.plan` を `pro` に更新、`stripe_subscription_id` を保存 |
+| `customer.subscription.updated` | plan を Stripe の状態と同期 |
+| `customer.subscription.deleted` | `workspaces.plan` を `free` に戻す |
+
+#### セキュリティ
+
+- Webhook は `stripe-signature` ヘッダを必ず検証する
+- plan の変更はフロントから直接できない、必ず Webhook 経由
+- Stripe secret key・webhook signing secret は Secret Manager に保存する
+- `stripe_customer_id` は workspace 作成時（または初回 checkout 時）に採番して保存する
 
 ---
 

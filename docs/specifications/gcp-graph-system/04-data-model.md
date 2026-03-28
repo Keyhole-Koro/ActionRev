@@ -9,7 +9,9 @@
 | workspace_id | STRING | ワークスペース識別子 |
 | name | STRING | ワークスペース名 |
 | owner_id | STRING | オーナーのユーザーID（Firebase Auth UID） |
-| plan | STRING | `free` / `pro` / `enterprise` |
+| plan | STRING | `free` / `pro` |
+| stripe_customer_id | STRING | Stripe の顧客ID |
+| stripe_subscription_id | STRING | Stripe のサブスクリプションID |
 | storage_used_bytes | INT64 | 使用済みストレージ容量 |
 | created_at | TIMESTAMP | 作成日時 |
 | updated_at | TIMESTAMP | 更新日時 |
@@ -191,13 +193,13 @@
 
 #### デフォルト値
 
-| | free | pro | enterprise |
-| --- | --- | --- | --- |
-| storage_quota_bytes | 1GB | 20GB | カスタム |
-| max_file_size_bytes | 10MB | 200MB | カスタム |
-| max_uploads_per_day | 10 | 200 | カスタム |
-| max_members | 3 | 20 | カスタム |
-| allowed_extraction_depths | `summary` | `full,summary` | `full,summary` |
+| | free | pro |
+| --- | --- | --- |
+| storage_quota_bytes | 1GB | 20GB |
+| max_file_size_bytes | 10MB | 200MB |
+| max_uploads_per_day | 10 | 200 |
+| max_members | 3 | 20 |
+| allowed_extraction_depths | `summary` | `full,summary` |
 
 ### normalization_tools
 

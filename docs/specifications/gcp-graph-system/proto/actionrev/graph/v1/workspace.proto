@@ -16,6 +16,27 @@ service WorkspaceService {
   rpc GetUploadURL(GetUploadURLRequest) returns (GetUploadURLResponse);
 }
 
+service BillingService {
+  rpc CreateCheckoutSession(CreateCheckoutSessionRequest) returns (CreateCheckoutSessionResponse);
+  rpc CreatePortalSession(CreatePortalSessionRequest) returns (CreatePortalSessionResponse);
+}
+
+message CreateCheckoutSessionRequest {
+  string workspace_id = 1;
+}
+
+message CreateCheckoutSessionResponse {
+  string checkout_url = 1;
+}
+
+message CreatePortalSessionRequest {
+  string workspace_id = 1;
+}
+
+message CreatePortalSessionResponse {
+  string portal_url = 1;
+}
+
 message Workspace {
   string workspace_id = 1;
   string name = 2;
@@ -32,7 +53,6 @@ enum WorkspacePlan {
   WORKSPACE_PLAN_UNSPECIFIED = 0;
   WORKSPACE_PLAN_FREE = 1;
   WORKSPACE_PLAN_PRO = 2;
-  WORKSPACE_PLAN_ENTERPRISE = 3;
 }
 
 message WorkspaceMember {
