@@ -11,8 +11,9 @@ message Document {
   string mime_type = 4;
   int64 file_size = 5;
   DocumentStatus status = 6;
-  string created_at = 7;
-  string updated_at = 8;
+  ExtractionDepth extraction_depth = 7;
+  string created_at = 8;
+  string updated_at = 9;
 }
 
 message DocumentChunk {
@@ -178,4 +179,10 @@ enum ToolRunStatus {
   TOOL_RUN_STATUS_RUNNING = 2;
   TOOL_RUN_STATUS_SUCCEEDED = 3;
   TOOL_RUN_STATUS_FAILED = 4;
+}
+
+enum ExtractionDepth {
+  EXTRACTION_DEPTH_UNSPECIFIED = 0;
+  EXTRACTION_DEPTH_FULL = 1;    // level 0-3（デフォルト）
+  EXTRACTION_DEPTH_SUMMARY = 2; // level 0-2
 }
