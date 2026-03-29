@@ -13,6 +13,7 @@ service NodeService {
 message GetNodeRequest {
   string document_id = 1;
   string node_id = 2;
+  bool resolve_aliases = 3;
 }
 
 message GetNodeResponse {

@@ -36,10 +36,9 @@
 
 - chunk または chunk 群を Gemini に入力できること
 - Gemini の返却形式は JSON であること
-- 最低限以下の概念を抽出対象とすること
-- `abstract` ノード
-- `concrete` ノード
-- ノード説明
+- 最低限以下を抽出対象とすること
+- `concept` / `entity` / `claim` / `evidence` / `counter`
+- 各ノードの `level` / `category` / `entity_type` / 説明
 - ノード間エッジ
 - 出典 chunk
 - 同一 document 内で重複する概念は統合可能であること
@@ -61,7 +60,7 @@
 ### Visualization
 
 - ノードエッジ形式でグラフを表示できること
-- 抽象ノードと具体ノードを見た目で区別できること
+- `level` または `category` に応じて見た目を区別できること
 - ノードクリックで詳細情報を表示できること
 - 出典 chunk を表示できること
 
@@ -118,7 +117,8 @@
     {
       "id": "n1",
       "label": "販売戦略",
-      "type": "abstract",
+      "level": 1,
+      "category": "concept",
       "description": "販売拡大のための上位方針"
     }
   ],
@@ -127,7 +127,7 @@
       "id": "e1",
       "source": "n1",
       "target": "n2",
-      "type": "abstract_to_concrete"
+      "type": "hierarchical"
     }
   ]
 }
@@ -140,5 +140,5 @@
 - テキスト抽出と chunk 保存が行われること
 - Gemini からノード・エッジ JSON を取得できること
 - BigQuery に document/chunk/node/edge が保存されること
-- フロントで抽象/具体ノードを含むグラフが表示されること
+- フロントで階層付きノードを含むグラフが表示されること
 - ノード詳細から出典 chunk を参照できること

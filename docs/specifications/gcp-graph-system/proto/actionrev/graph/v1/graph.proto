@@ -16,9 +16,12 @@ service GraphService {
 
 message GetGraphRequest {
   string document_id = 1;
-  NodeType node_type_filter = 2;
-  int32 limit = 3;
-  string source_filename_filter = 4;
+  repeated NodeCategory category_filters = 2;
+  repeated int32 level_filters = 3;
+  int32 limit = 4;
+  string source_filename_filter = 5;
+  bool resolve_aliases = 6;
+  repeated EdgeType edge_type_filters = 7;
 }
 
 message GetGraphResponse {

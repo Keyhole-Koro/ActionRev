@@ -16,26 +16,32 @@
 
 #### CreateDocument
 
-ファイルをアップロードして document を作成する。
+document を作成し、ファイル upload 用の署名付き URL を発行する。
 
 #### Request
 
 - `filename`
 - `mime_type`
-- `content` またはアップロード対象メタデータ
+- `file_size`
 
 #### Response
 
 ```json
 {
-  "document_id": "doc_001",
-  "status": "uploaded"
+  "document": {
+    "document_id": "doc_001",
+    "status": "uploaded"
+  },
+  "upload_url": "https://storage.googleapis.com/...",
+  "upload_method": "PUT",
+  "upload_content_type": "application/pdf"
 }
 ```
 
 #### Notes
 
-- 実ファイル転送は署名付き URL または別 upload 手段に切り出してもよい
+- 実ファイル転送は `CreateDocument` のレスポンスで返した署名付き URL に対してクライアントが直接実行する
+- upload 完了後に `StartProcessing` を呼び出して解析を開始する
 
 #### GetDocument
 
@@ -48,6 +54,13 @@ document 一覧と処理状態を取得する。
 #### StartProcessing
 
 document の解析を開始する。
+
+#### Preconditions
+
+- 対象 document の実ファイル upload が完了していること
+- `documents.status` が `uploaded` であること
+- upload 未完了または `processing` / `completed` 状態の document に対してはエラーを返す
+- `force_reprocess=true` の場合のみ `completed` または `failed` の document を再処理対象として受け付ける
 
 #### Response
 
@@ -67,9 +80,12 @@ document の解析を開始する。
 
 #### Request Parameters
 
-- `node_type`
+- `category_filters`
+- `level_filters`
+- `edge_type_filters`
 - `limit`
 - `source_filename` : zip 内の特定ファイル由来のノード・エッジに絞り込む（省略時は全ファイル対象）
+- `resolve_aliases` : canonical ノードへ集約して返すか
 
 #### Response Example
 
@@ -80,7 +96,8 @@ document の解析を開始する。
     {
       "id": "n1",
       "label": "販売戦略",
-      "type": "abstract",
+      "level": 1,
+      "category": "concept",
       "description": "販売拡大のための上位方針"
     }
   ],
@@ -89,7 +106,7 @@ document の解析を開始する。
       "id": "e1",
       "source": "n1",
       "target": "n2",
-      "type": "abstract_to_concrete"
+      "type": "hierarchical"
     }
   ]
 }
@@ -100,6 +117,12 @@ document の解析を開始する。
 #### GetNode
 
 ノード詳細、関連エッジ、出典 chunk を取得する。
+
+#### Request Parameters
+
+- `document_id`
+- `node_id`
+- `resolve_aliases` : alias ノード指定時に canonical ノードへ寄せて返すか
 
 ### JobService
 
@@ -150,6 +173,7 @@ document の解析を開始する。
 - request と response は用途単位で明示的に分ける
 - `Node`, `Edge`, `Document`, `Job`, `NormalizationTool`, `NormalizationToolRun` は共通 message として定義する
 - front でそのまま `React Flow` にマップしやすい field 名を採用する
+- ノード分類は `level` / `category` / `entity_type` を正とし、旧2値分類は持ち込まない
 
 ## Transport Policy
 
@@ -161,7 +185,7 @@ document の解析を開始する。
 
 ### Prompt Requirements
 
-- 抽象概念と具体概念を明示的に区別させる
+- ノードの `level` と `category` を明示的に割り当てさせる
 - エッジ種別を限定する
 - 出典 chunk の参照を必須にする
 - JSON Schema に厳密に従うよう要求する
