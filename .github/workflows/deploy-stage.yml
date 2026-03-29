@@ -63,22 +63,13 @@ jobs:
         run: |
           terraform apply -auto-approve \
             -var-file=envs/stage.tfvars \
-            -var="backend_image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/backend:${{ inputs.image_tag }}" \
-            -var="sandbox_image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/sandbox:${{ inputs.image_tag }}"
+            -var="backend_image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/backend:${{ inputs.image_tag }}"
 
       # --- Cloud Run: アプリデプロイ ---
       - name: Deploy backend to Cloud Run
         run: |
           gcloud run deploy actionrev-backend-stage \
             --image="${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/backend:${{ inputs.image_tag }}" \
-            --region="${{ env.REGION }}" \
-            --project="${{ secrets.GCP_PROJECT_ID_STAGE }}" \
-            --quiet
-
-      - name: Update sandbox Cloud Run Job image
-        run: |
-          gcloud run jobs update actionrev-sandbox-stage \
-            --image="${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/sandbox:${{ inputs.image_tag }}" \
             --region="${{ env.REGION }}" \
             --project="${{ secrets.GCP_PROJECT_ID_STAGE }}" \
             --quiet

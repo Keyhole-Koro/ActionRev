@@ -5,7 +5,6 @@ region     = "asia-northeast1"
 env        = "prod"
 
 backend_image = "asia-northeast1-docker.pkg.dev/actionrev-prod/actionrev/backend:latest"
-sandbox_image = "asia-northeast1-docker.pkg.dev/actionrev-prod/actionrev/sandbox:latest"
 
 backend_min_instances = 0
 backend_max_instances = 20

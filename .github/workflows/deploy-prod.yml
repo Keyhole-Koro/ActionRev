@@ -51,7 +51,6 @@ jobs:
           terraform plan \
             -var-file=envs/prod.tfvars \
             -var="backend_image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_PROD }}/${{ env.AR_REPO }}/backend:${{ inputs.image_tag }}" \
-            -var="sandbox_image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_PROD }}/${{ env.AR_REPO }}/sandbox:${{ inputs.image_tag }}" \
             -out=tfplan
 
       - name: Upload plan
@@ -108,14 +107,6 @@ jobs:
         run: |
           gcloud run deploy actionrev-backend-prod \
             --image="${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_PROD }}/${{ env.AR_REPO }}/backend:${{ inputs.image_tag }}" \
-            --region="${{ env.REGION }}" \
-            --project="${{ secrets.GCP_PROJECT_ID_PROD }}" \
-            --quiet
-
-      - name: Update sandbox Cloud Run Job (prod)
-        run: |
-          gcloud run jobs update actionrev-sandbox-prod \
-            --image="${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_PROD }}/${{ env.AR_REPO }}/sandbox:${{ inputs.image_tag }}" \
             --region="${{ env.REGION }}" \
             --project="${{ secrets.GCP_PROJECT_ID_PROD }}" \
             --quiet
