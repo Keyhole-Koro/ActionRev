@@ -146,6 +146,7 @@ document の解析を開始する。
 
 ## Proto Design Guidelines
 
+- package は `actionrev.v1` の単一パッケージとする（サービス間で共通 message が多く、分割するメリットがない）
 - service は `DocumentService`, `GraphService`, `NodeService`, `JobService`, `ToolService` に分割する
 - request と response は用途単位で明示的に分ける
 - `Node`, `Edge`, `Document`, `Job`, `NormalizationTool`, `NormalizationToolRun` は共通 message として定義する

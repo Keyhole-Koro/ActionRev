@@ -239,10 +239,11 @@ push to main:
 - 正規化ツール approval: LLM スコア ≥ 0.9 で自動承認、< 0.9 で人間レビュー（Discord 通知）
 - ファイルアップロード: フロントから GCS へ署名付き URL で直接アップロードする
 - 認証: Firebase Auth + Google OAuth を採用（認証なし MVP フェーズなし）
+- Gemini 出力スキーマ: `response_mime_type: "application/json"` + JSON Schema で強制構造化する
+- Gemini リトライ: 最大3回（parse 失敗もカウント）、429 は別カウントで最大5回
+- proto パッケージ: `actionrev.v1` の単一パッケージ
 
 ## Open Issues
 
-- Gemini の出力スキーマとリトライ戦略の詳細
 - ノード統合ルールの厳密度
 - フロントの可視化ライブラリ選定
-- proto の package 分割方針

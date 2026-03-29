@@ -134,9 +134,12 @@ RETURN m.label, m.type
 [可視化（React Flow）]
 ```
 
+## Resolved Decisions
+
+- Cloud Run Jobs のトリガー: document 処理完了後に Pub/Sub topic へ publish → Eventarc が Cloud Run Jobs を起動する
+
 ## Open Issues
 
-- Cloud Run Jobs のトリガー方法（document 処理完了後の Pub/Sub か、定期実行か）
 - Spanner Graph への移行タイミングと BQ との使い分け方針
 - アルゴリズムの再計算スコープ（全グラフか差分か）
 - フロントでのスコア可視化の UX（サイズ変化・色分け・ツールチップ）

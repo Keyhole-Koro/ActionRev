@@ -256,9 +256,14 @@ HTML サマリはノード数が多い場合にコストが支配的になるた
 
 ---
 
+## Resolved Decisions
+
+- `entity_type` は enum で固定する。値セット: `person` / `organization` / `metric` / `date` / `place` / `event` / `artifact` / `process`
+  - `category: "entity"` のノードのみ使用する。それ以外のカテゴリは `null`
+  - proto では `EntityType` enum として定義する
+
 ## Open Issues
 
 - Pass 2 のコンテキスト長上限（大きな文書では Pass 1 全結果が入りきらない可能性）
 - HTML サマリ生成の並列化戦略（Cloud Tasks でノード単位に並列投入するか）
-- `entity_type` の値セットをどこまで固定するか（開放型 STRING にするか enum にするか）
 - level 割り当ての一貫性確保（文書間で同じ概念が異なる level になるケースの対処）
