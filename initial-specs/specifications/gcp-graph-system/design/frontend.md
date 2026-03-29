@@ -235,7 +235,7 @@ Canvas 右上のボタンでビューを切り替える。
 - `経路検索` 実行後、候補 path をサイドパネルまたは上部トレイに一覧表示する
 - path を選ぶと対応ノード・エッジのみ強調表示し、他は半透明にする
 - 表示内容には hop 数、edge type の列、document 横断かどうかを含める
-- path 一覧には `source_document_ids` を併記し、`supporting_edge_ids` がある path は「根拠あり」として表示する
+- path 一覧には `evidence_ref.source_document_ids` を併記し、`evidence_ref.supporting_edge_ids` がある path は「根拠あり」として表示する
 - path 一覧の軽量根拠情報は `PathEvidenceRef` として扱う
 
 ### document 横断探索
@@ -364,7 +364,7 @@ Canvas 右上の 🔍 アイコンで展開するサイドパネル。
 - 経路検索モード中は canvas 上でノードを 2 つまで選択できる
 - `max depth` は 2〜6 の範囲で選択可能にする
 - path 候補をクリックすると対応サブグラフを中央にフィット表示する
-- `supporting_edge_ids` がある場合は「根拠を見る」導線を表示し、必要時に `GetGraphEntityDetail` で詳細を引く
+- `evidence_ref.supporting_edge_ids` がある場合は「根拠を見る」導線を表示し、必要時に `GetGraphEntityDetail` で詳細を引く
 - 検索時は `cross_document_toggle` と `document_scope_filter` の両方を request に反映する
 
 ---

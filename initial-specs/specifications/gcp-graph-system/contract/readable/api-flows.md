@@ -69,8 +69,8 @@ sequenceDiagram
 
     F->>G: FindPaths(source_node_id, target_node_id)
     G->>SG: Path query
-    SG-->>G: paths + PathEvidenceRef
-    G-->>F: FindPathsResponse (PathOverlayLayer)
+    SG-->>G: GraphPath + PathEvidenceRef
+    G-->>F: FindPathsResponse (PathOverlayLayer + evidence refs)
 
     F->>N: GetGraphEntityDetail(target_ref)
     N->>BQ: Load source chunks / supporting edges / representative nodes

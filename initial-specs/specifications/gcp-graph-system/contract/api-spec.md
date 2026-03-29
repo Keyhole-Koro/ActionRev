@@ -209,8 +209,10 @@ document の解析を開始する。
       "node_ids": ["cn_01JQ8YCH9R2V6M4B8T1K5N7PQS", "cn_01JQ8YG6B1N4T8M3R7V2K5P9DX", "cn_01JQ8YJ2F4C6M9T1R3V8K5N7QW"],
       "edge_ids": ["ed_01JQ8YK8M3T6V1R4C7N9P2L5HS", "ed_01JQ8YM4R7C1N5T8V2K6P9L3BZ"],
       "hop_count": 2,
-      "supporting_edge_ids": ["ed_01JQ8YN9T4V2R6C1M8K5P3L7QA"],
-      "source_document_ids": ["doc_001", "doc_014"]
+      "evidence_ref": {
+        "supporting_edge_ids": ["ed_01JQ8YN9T4V2R6C1M8K5P3L7QA"],
+        "source_document_ids": ["doc_001", "doc_014"]
+      }
     }
   ]
 }
@@ -224,9 +226,9 @@ document の解析を開始する。
 - 探索系 RPC は必ず `workspace_id` を受け取り、workspace 境界をまたがる探索は許可しない
 - `cross_document=false` の場合は現在の document または `document_ids` の範囲だけを探索対象とする
 - `cross_document=true` の場合は同一 workspace 内の canonical graph を探索対象とする
-- `GraphPath.supporting_edge_ids` は path の根拠として使える document edge への軽量参照のみを返し、chunk 本文は含めない
-- `GraphPath.source_document_ids` は path 根拠が見つかった document 群を返す
-- `GraphPath.supporting_edge_ids` と `GraphPath.source_document_ids` を合わせて `PathEvidenceRef` として扱う
+- `GraphPath.evidence_ref` は `PathEvidenceRef` を返し、path の根拠へ降りるための軽量参照のみを含む
+- `PathEvidenceRef.supporting_edge_ids` は path の根拠として使える document edge 参照を返し、chunk 本文は含めない
+- `PathEvidenceRef.source_document_ids` は path 根拠が見つかった document 群を返す
 - `Node.scope=document` の場合 `id` は `nd_*` を返し、`canonical_node_id` は alias 解決済みなら補助属性として返す
 - `Node.scope=canonical` の場合 `id` と `canonical_node_id` は同一の `cn_*` を返し、`document_id` は必須ではない
 - `Edge.scope=document` の場合 `source` / `target` は document node (`nd_*`) を指す

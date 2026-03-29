@@ -25,6 +25,7 @@
 - 各 message / enum は所属ドメインの proto ファイルが所有する
 - `common.proto` は複数ドメインをまたぐ共有型のみを保持する（`DocumentChunk` 等）
 - `graph_types.proto` は `Node`, `Edge`, `Graph` および関連 enum を保持し、service は定義しない
+- `graph.proto` は traversal RPC と `PathEvidenceRef` / `GraphPath` を保持する
 - package を domain ごとに分割せず、初期は単一 package のまま運用する
 - frontend が `React Flow` に直接マップしやすい message 形状を優先する
 - 長時間処理は unary RPC で閉じず、job 起動と status 参照に分割する
