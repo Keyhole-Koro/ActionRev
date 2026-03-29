@@ -12,6 +12,7 @@ repo/
 ├── backend/                  # Go + Connect RPC バックエンド
 ├── proto/                    # 生成元 proto（または contract/proto の同期先）
 ├── infra/                    # Terraform / GCP デプロイ設定（将来）
+├── compose.yaml              # ローカル開発スタック（frontend/backend + emulator）
 ├── scripts/                  # ローカル開発・CI 補助スクリプト
 ├── docs/                     # 補助ドキュメント（任意）
 └── Makefile                  # 全体タスク入口
@@ -22,7 +23,16 @@ repo/
 - `frontend/`: `GraphViewMode`, `PathSearchMode`, `ExplorePanelState` など UI state family を実装する
 - `backend/`: `DocumentLifecycleState`, `JobLifecycleState`, `PipelineStageState` を持つ業務ロジックを実装する
 - `proto/`: Connect RPC 契約と生成コードの起点になる
+- `compose.yaml`: ローカル開発時に frontend / backend / GCS / Firebase Auth をまとめて起動する
 - `scripts/`: `buf generate`, fixture 同期、ローカル検証をまとめる
+
+### Local Docker Compose Stack
+
+- `frontend`: Vite 開発サーバー
+- `backend`: Go API サーバー
+- `gcs`: fake-gcs-server による Cloud Storage 代替
+- `firebase-auth`: Firebase Auth Emulator
+- BigQuery / Spanner Graph は初期 compose では含めず、backend は `mock` モードで起動する
 
 ---
 
