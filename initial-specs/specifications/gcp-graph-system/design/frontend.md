@@ -18,6 +18,7 @@
 | `ExplorePanelState` | 詳細パネルの表示状態 | `closed` / `document_detail` / `canonical_detail` |
 | `PathSearchMode` | 経路検索 UI の操作状態 | `inactive` / `picking_source` / `picking_target` / `results` |
 | `ExploreDepthPreset` | 近傍展開の深さプリセット | `one_hop` / `two_hop` / `three_hop` |
+| `GraphLayerName` | 画面上の graph レイヤー名 | `base_graph_layer` / `expanded_graph_layer` / `path_overlay_layer` |
 
 ### Naming Rules
 
@@ -25,6 +26,7 @@
 - `scope` は `GraphProjectionScope` に限定し、単なる UI タブ切り替えには使わない
 - `mode` は `GraphViewMode` や `PathSearchMode` のように具体 family 名で分ける
 - React state 名は family を反映し、`viewMode`, `pathSearchMode`, `explorePanelState` のように曖昧な `state` 単体名を避ける
+- path に付く根拠導線は `PathEvidenceRef` として扱い、document edge 実体は必要時に詳細 API で取得する
 
 ---
 
@@ -234,6 +236,7 @@ Canvas 右上のボタンでビューを切り替える。
 - path を選ぶと対応ノード・エッジのみ強調表示し、他は半透明にする
 - 表示内容には hop 数、edge type の列、document 横断かどうかを含める
 - path 一覧には `source_document_ids` を併記し、`supporting_edge_ids` がある path は「根拠あり」として表示する
+- path 一覧の軽量根拠情報は `PathEvidenceRef` として扱う
 
 ### document 横断探索
 
@@ -253,6 +256,9 @@ Canvas 右上のボタンでビューを切り替える。
 - `baseGraph`: `GetGraph` で取得した document 初期表示用 graph
 - `expandedGraph`: `ExpandNeighbors` で追加した subgraph
 - `pathSearchGraph`: `FindPaths` の結果として一時追加した subgraph
+- `baseGraphLayer`: `GraphLayerName=base_graph_layer`
+- `expandedGraphLayer`: `GraphLayerName=expanded_graph_layer`
+- `pathOverlayLayer`: `GraphLayerName=path_overlay_layer`
 - `selectedNodeId`: 現在詳細表示しているノード
 - `pathSearchDraft`: 経路検索の `source_node_id` / `target_node_id`
 - `exploreOptions`: `maxDepth`, `edgeTypeFilters`, `crossDocument`
@@ -275,9 +281,9 @@ Canvas 右上のボタンでビューを切り替える。
 
 ### 表示上のレイヤー
 
-- `baseGraph`: 通常表示
-- `expandedGraph`: 追加表示。薄いハイライト背景または発光 border を付ける
-- `pathSearchGraph`: 最上位表示。path 上のノードと edge を強調し、非該当要素は減衰表示する
+- `baseGraphLayer`: 通常表示
+- `expandedGraphLayer`: 追加表示。薄いハイライト背景または発光 border を付ける
+- `pathOverlayLayer`: 最上位表示。path 上のノードと edge を強調し、非該当要素は減衰表示する
 
 ---
 

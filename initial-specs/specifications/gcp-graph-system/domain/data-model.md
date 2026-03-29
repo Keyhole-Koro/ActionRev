@@ -23,6 +23,26 @@
 - `scope` は `GraphProjectionScope` を指す専用語として使う
 - `approved` や `failed` のような同名値は family が違えば意味も異なるため、仕様と実装の両方で混同しない
 
+## Named Reference Objects
+
+軽量な参照オブジェクトや中間成果物も名前を固定して扱う。
+
+### Reference Families
+
+| Name | 用途 | 中身 |
+| --- | --- | --- |
+| `PathEvidenceRef` | path から根拠へ降りるための軽量参照 | `supporting_edge_ids`, `source_document_ids` |
+| `SupportingEdgeRef` | path や canonical relation を支える document edge 参照 | document edge の ID 群 |
+| `RepresentativeNodeRef` | canonical node に対応する代表 document node 参照 | representative document node の ID 群 |
+| `DocumentBrief` | document 全体の高レイヤー要約 | 主題、level 0〜1 候補、主要 claim / entity、章構成 |
+| `SectionBrief` | section 単位の高レイヤー要約 | 主題、代表ノード候補、接続ヒント、entity / metric 要約 |
+
+### Reference Rules
+
+- `Ref` は本文を持たない軽量参照を表す
+- `Brief` は再生成可能な中間成果物を表す
+- `PathEvidenceRef` は UI の導線用であり、source chunk 本文そのものは含めない
+
 ## Tables
 
 ### users

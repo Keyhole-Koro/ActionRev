@@ -176,6 +176,8 @@ document の解析を開始する。
 
 2 ノード間の多段経路を検索する。`Spanner Graph` を使い、複数経路候補を返す。
 
+この仕様では、各 path に付く根拠導線を `PathEvidenceRef` と呼ぶ。`PathEvidenceRef` は軽量参照であり、詳細本文は返さない。
+
 #### Request Parameters
 
 - `source_node_id`
@@ -224,6 +226,7 @@ document の解析を開始する。
 - `cross_document=true` の場合は同一 workspace 内の canonical graph を探索対象とする
 - `GraphPath.supporting_edge_ids` は path の根拠として使える document edge への軽量参照のみを返し、chunk 本文は含めない
 - `GraphPath.source_document_ids` は path 根拠が見つかった document 群を返す
+- `GraphPath.supporting_edge_ids` と `GraphPath.source_document_ids` を合わせて `PathEvidenceRef` として扱う
 - `Node.scope=document` の場合 `id` は `nd_*` を返し、`canonical_node_id` は alias 解決済みなら補助属性として返す
 - `Node.scope=canonical` の場合 `id` と `canonical_node_id` は同一の `cn_*` を返し、`document_id` は必須ではない
 - `Edge.scope=document` の場合 `source` / `target` は document node (`nd_*`) を指す
@@ -250,8 +253,8 @@ document の解析を開始する。
 - `detail.related_edges` : 詳細パネルで使う関連 edge
 - `detail.evidence.source_chunks` : 表示根拠 chunk
 - `detail.evidence.source_document_ids` : 根拠 document 一覧
-- `detail.evidence.supporting_edges` : path や canonical 関係の根拠として提示する document edge 群
-- `detail.representative_nodes` : `scope=canonical` の場合のみ返す代表 document node 群
+- `detail.evidence.supporting_edges` : `SupportingEdgeRef` の実体として返す document edge 群
+- `detail.representative_nodes` : `RepresentativeNodeRef` の実体として返す代表 document node 群
 
 #### Notes
 
