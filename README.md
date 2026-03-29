@@ -20,7 +20,7 @@ Default host endpoints:
 If those host ports are already in use, override them before startup:
 
 ```bash
-BACKEND_PORT=18080 VITE_API_BASE_URL=http://localhost:18080 docker compose up --build
+BACKEND_PORT=18080 NEXT_PUBLIC_API_BASE_URL=http://localhost:18080 docker compose up --build
 ```
 
 Notes:

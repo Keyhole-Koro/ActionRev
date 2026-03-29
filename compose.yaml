@@ -10,11 +10,11 @@ services:
           echo "frontend/package.json not found. Waiting for frontend implementation...";
           sleep infinity;
         fi;
-        if [ ! -x node_modules/.bin/vite ]; then npm install; fi;
-        npm run dev -- --host 0.0.0.0 --port 5173
+        npm install;
+        npm run dev
       '
     environment:
-      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080}
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8080}
     ports:
       - "${FRONTEND_PORT:-5173}:5173"
     volumes:
@@ -84,9 +84,7 @@ services:
     command: >
       bash -c '
         npm install -g firebase-tools@13 &&
-        cat > firebase.json <<EOF_INNER
-        {"emulators":{"auth":{"port":9099}}}
-        EOF_INNER
+        printf "%s\n" "{\"emulators\":{\"auth\":{\"port\":9099}}}" > firebase.json &&
         firebase emulators:start --only auth --project demo-synthify --config firebase.json
       '
     ports:
