@@ -1,0 +1,21 @@
+# OS / editor
+.DS_Store
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Local caches
+.gemini-cache/
+
+# Temporary local backups
+frontend.root-bak/
+backend.root-bak/
+
+# Scratch files
+.codex-write-test
