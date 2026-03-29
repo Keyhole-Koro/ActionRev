@@ -2,7 +2,7 @@
 
 ## Overview
 
-フロントエンドは `TypeScript + React + React Flow` で実装し、`Firebase Hosting` から配信する。グラフの可視化を中心に、ファイルアップロード・処理ステータス確認・ノード詳細閲覧の3つのユースケースを担う。開発者向けに `/dev/stats` ルートで統計ビューワーを提供する。
+フロントエンドは `TypeScript + React + React Flow` で実装し、`Firebase Hosting` から配信する。グラフの可視化を中心に、ファイルアップロード・処理ステータス確認・ノード詳細閲覧の3つのユースケースを担う。開発者向けに `/dev/stats` ルートで統計ビューワーを提供し、`Firebase Auth` のカスタムクレーム `role: "dev"` を持つユーザーのみ表示する。
 
 ---
 
@@ -11,7 +11,7 @@
 | パス | 用途 |
 | --- | --- |
 | `/` | ドキュメント一覧・グラフビュー |
-| `/dev/stats` | 開発者向け統計ビューワー（認証後も本番では非表示） |
+| `/dev/stats` | 開発者向け統計ビューワー（`role: "dev"` のみ表示） |
 
 ---
 
@@ -67,7 +67,8 @@
 複数ドキュメント横断の探索に使う。関連するノードが自然にクラスター化する。
 
 - 実装ライブラリ: `d3-force` + React Flow カスタムレイアウト
-- `source_filename` / `document_id` でノードを色帯グループ化するオプションを用意する
+- ノード fill は `category` 色を維持し、border color を `document_id` ごとに割り当てる
+- `source_filename` / `document_id` でノードをグループ化するオプションを用意する
 
 ### ビュー3: Claim 中心ビュー
 
@@ -163,7 +164,7 @@ Canvas 右上のボタンでビューを切り替える。
 ```
 
 - `summary_html` は `<iframe sandbox="allow-same-origin" srcdoc={summary_html}>` で描画する
-- CSS はアプリ側から iframe に注入する
+- CSS は `iframe` の `load` 後に `iframe.contentDocument` へ `<link rel="stylesheet">` を動的注入する
 - `summary_html` が null の場合は `description` をプレーンテキストで表示する
 - 出典チャンクには `source_filename` とページ番号を表示する
 - 関連ノードは隣接エッジを辿って取得し、クリックで該当ノードにフォーカスする
@@ -414,7 +415,4 @@ Canvas 右上の 🔍 アイコンで展開するサイドパネル。
 
 ## Open Issues
 
-- iframe への CSS 注入の具体的な実装方法
-- 複数ドキュメント横断表示時のノード色分け方針
-- モバイル対応の要否
-- `/dev/stats` の本番環境での表示制御方法（env フラグか認証ロールか）
+- モバイル対応は初期スコープ外とするが、将来 React Flow の簡易閲覧 UI を別設計にするか

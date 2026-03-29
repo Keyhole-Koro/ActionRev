@@ -169,11 +169,32 @@ document の解析を開始する。
 
 ## Proto Design Guidelines
 
-- service は `DocumentService`, `GraphService`, `NodeService`, `JobService`, `ToolService` に分割する
+- package は単一の `actionrev.graph.v1` とし、versioning は package suffix で管理する
+- `.proto` ファイルは service 単位で分割し、1ファイル1service を原則とする
+- service は `UserService`, `WorkspaceService`, `DocumentService`, `GraphService`, `NodeService`, `JobService`, `ToolService` に分割する
+- `GraphService` はグラフ取得と開発者向け統計 RPC を持つ
 - request と response は用途単位で明示的に分ける
-- `Node`, `Edge`, `Document`, `Job`, `NormalizationTool`, `NormalizationToolRun` は共通 message として定義する
+- `Node`, `Edge`, `Document`, `Job`, `NormalizationTool`, `NormalizationToolRun` などの共通 message / enum は `common.proto` に集約する
+- 複数 service から参照される message は service 個別 proto に重複定義しない
+- package を domain ごとに細分化するのは初期スコープ外とし、import と生成コードの複雑化を避ける
 - front でそのまま `React Flow` にマップしやすい field 名を採用する
 - ノード分類は `level` / `category` / `entity_type` を正とし、旧2値分類は持ち込まない
+
+### Proto File Ownership
+
+- `common.proto`: 共通 message / enum のみを保持し、service は定義しない
+- `document.proto`: upload 開始と document メタデータ取得のみを扱う
+- `graph.proto`: 可視化用グラフ取得と `/dev/stats` 系 RPC を扱う
+- `node.proto`: 単一ノード詳細取得を扱う
+- `job.proto`: 非同期ジョブ状態取得のみを扱う
+- `tool.proto`: 正規化ツールの生成、承認、実行を扱う
+- `user.proto`, `workspace.proto`: 認証後のユーザー同期と workspace 管理を扱う
+
+### Package Evolution Policy
+
+- 後方互換を壊す変更は `actionrev.graph.v2` を新設して行う
+- `v1` では field 追加を許容し、field 削除・型変更・意味変更は禁止する
+- `buf breaking` を導入した時点で `main` ブランチとの差分を自動検証する
 
 ## Transport Policy
 
@@ -197,5 +218,9 @@ document の解析を開始する。
 - 重複ノードの統合
 - 不正 JSON に対する JSON repair を 1 回だけ試行する
 - JSON repair 後も不正な場合は Gemini 再試行を最大 2 回まで行う
+- JSON repair は syntax error のみを対象とし、semantic error は補正しない
+- semantic error は schema 必須項目欠落、enum 不正値、参照不整合、制約違反を含む
+- 構造成立に必須な項目はフォールバックせず、要素破棄または再試行対象とする
+- `description`, `summary_html`, `entity_type` など品質補助項目に限ってフォールバックを許容する
 - 不十分な出力時の fail handling
 - chunk 抽出の確定失敗は document 全体の失敗として扱う

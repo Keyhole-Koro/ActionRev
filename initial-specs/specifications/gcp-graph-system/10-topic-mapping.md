@@ -65,14 +65,33 @@ Step 3: マッピング結果を保存する
 ```
 [各 doc の topic candidate ノード生成]
          ↓
-[embedding similarity で類似トピックを候補化]
+[edit distance + embedding で類似トピックを候補化]
          ↓
-[LLM で同一概念かを判定]
+[高信頼候補は自動承認、境界候補は suggested 登録]
          ↓
 [node_aliases に canonical_node_id として登録]
          ↓
 [GetGraph 時に canonical ノードに集約して返す]
 ```
+
+### カノニカル化ルール
+
+document 内の重複統合は Pass 2 を使って Gemini に委ねる。ここでは document 横断の canonical 化のみ扱う。
+
+1. `label` を正規化する（全角/半角のゆらぎ、前後空白、大小文字差を吸収）
+2. `label + description` を使って embedding を生成する
+3. 正規化後ラベルの編集距離が 2 以下、かつ cosine similarity が 0.97 以上のペアは `node_aliases.merge_status=approved` で自動登録する
+4. cosine similarity が 0.88 以上 0.97 未満のペアは `node_aliases.merge_status=suggested` で登録する
+5. `suggested` は `dev` ロールがレビューし、承認時に `approved`、却下時に `rejected` へ遷移させる
+6. 0.88 未満のペアは候補として保存しない
+
+同名異概念の誤統合を避けるため、embedding とレビュー UI の両方で `label` 単体ではなく `label + description` を扱う。
+
+### Embedding 生成タイミング
+
+- topic candidate の embedding は Pass 2 完了直後に生成する
+- 生成処理は document 処理パイプラインの一部として同期的に実行する
+- 失敗時は canonical 化のみスキップし、抽出済みノード・エッジの保存は継続する
 
 `GraphService.GetGraph` と `NodeService.GetNode` に `resolve_aliases=true` オプションを追加し、BQ クエリ側で alias JOIN を行う。
 
@@ -105,7 +124,5 @@ Step 3: マッピング結果を保存する
 
 ## Open Issues
 
-- embedding の生成タイミング（抽出直後か、バッチか）
-- cosine similarity の閾値の初期値と調整方針
-- LLM に渡すコンテキスト量（ノード label だけか description も含めるか）
-- カノニカル化の承認フローをどこまで厳密にするか
+- `approved` の自動閾値（edit distance ≤ 2 かつ cosine ≥ 0.97）が実データで厳しすぎるか
+- `suggested` のレビュー負荷をどこまで `dev` ロール運用で吸収できるか

@@ -18,10 +18,13 @@
 ## Design Policy
 
 - package は `actionrev.graph.v1` とする
-- service は用途ごとに分離する
+- service は用途ごとに分離し、1ファイル1service を原則とする
+- 共通 message / enum は `common.proto` に集約する
+- package を domain ごとに分割せず、初期は単一 package のまま運用する
 - frontend が `React Flow` に直接マップしやすい message 形状を優先する
 - 長時間処理は unary RPC で閉じず、job 起動と status 参照に分割する
 - 初期段階ではシンプルさを優先し、将来の field 追加を見込んで optional 拡張しやすい構造にする
+- breaking change は `actionrev.graph.v2` を新設して吸収する
 
 ## Notes
 
