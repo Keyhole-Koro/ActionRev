@@ -20,8 +20,15 @@ Default host endpoints:
 If those host ports are already in use, override them before startup:
 
 ```bash
-BACKEND_PORT=18080 NEXT_PUBLIC_API_BASE_URL=http://localhost:18080 docker compose up --build
+BACKEND_PORT=18080 docker compose up --build
 ```
+
+`frontend` uses two API base URLs:
+
+- `NEXT_PUBLIC_API_BASE_URL`: browser-facing URL. Default is `http://localhost:${BACKEND_PORT}`.
+- `INTERNAL_API_BASE_URL`: container-internal URL. Default is `http://backend:8080`.
+
+That split avoids `localhost` mismatches between the browser and the Next.js container.
 
 Notes:
 
