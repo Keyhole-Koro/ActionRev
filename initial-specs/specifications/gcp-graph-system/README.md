@@ -34,7 +34,7 @@
 
 ### implementation/ — 物理実装構造
 
-- [backend-structure.md](implementation/backend-structure.md)
+- [backend-structure.md](implementation/backend-structure.md) - frontend / backend / shared contract を含む実装構造
 
 ### quality/ — テスト・評価・運用
 

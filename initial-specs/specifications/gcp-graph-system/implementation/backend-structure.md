@@ -1,8 +1,88 @@
-# 16. Backend Directory Structure
+# 16. Implementation Structure
 
 ## 概要
 
-Go バックエンドはレイヤードアーキテクチャを採用する。各レイヤーは一方向にのみ依存し、循環参照を禁止する。
+実装フェーズでは frontend / backend / shared contract を同一リポジトリで管理する。backend はレイヤードアーキテクチャを採用し、frontend は feature ごとの UI state と API client を持つ構成にする。
+
+## リポジトリ全体構造
+
+```
+repo/
+├── frontend/                 # React + React Flow フロントエンド
+├── backend/                  # Go + Connect RPC バックエンド
+├── proto/                    # 生成元 proto（または contract/proto の同期先）
+├── infra/                    # Terraform / GCP デプロイ設定（将来）
+├── scripts/                  # ローカル開発・CI 補助スクリプト
+├── docs/                     # 補助ドキュメント（任意）
+└── Makefile                  # 全体タスク入口
+```
+
+### 役割分担
+
+- `frontend/`: `GraphViewMode`, `PathSearchMode`, `ExplorePanelState` など UI state family を実装する
+- `backend/`: `DocumentLifecycleState`, `JobLifecycleState`, `PipelineStageState` を持つ業務ロジックを実装する
+- `proto/`: Connect RPC 契約と生成コードの起点になる
+- `scripts/`: `buf generate`, fixture 同期、ローカル検証をまとめる
+
+---
+
+## Frontend Directory Structure
+
+```
+frontend/
+├── src/
+│   ├── app/
+│   │   ├── routes/
+│   │   │   ├── index.tsx          # `/`
+│   │   │   └── dev-stats.tsx      # `/dev/stats`
+│   │   ├── providers/
+│   │   │   ├── auth-provider.tsx
+│   │   │   └── query-provider.tsx
+│   │   └── router.tsx
+│   ├── features/
+│   │   ├── documents/
+│   │   │   ├── components/
+│   │   │   ├── api/
+│   │   │   └── state/
+│   │   ├── graph/
+│   │   │   ├── components/        # React Flow, toolbars, panels
+│   │   │   ├── layout/            # elkjs / d3-force / claim view
+│   │   │   ├── api/               # GetGraph, ExpandNeighbors, FindPaths, GetGraphEntityDetail
+│   │   │   ├── state/             # GraphViewMode, PathSearchMode, ExplorePanelState
+│   │   │   └── model/
+│   │   ├── stats/
+│   │   │   ├── components/
+│   │   │   ├── api/               # PipelineMetrics, ExtractionMetrics, EvaluationMetrics, ErrorMetrics
+│   │   │   └── state/
+│   │   └── normalization-tools/
+│   │       ├── components/
+│   │       ├── api/
+│   │       └── state/
+│   ├── shared/
+│   │   ├── components/
+│   │   ├── lib/
+│   │   ├── styles/
+│   │   └── types/
+│   ├── generated/                 # Connect client / proto generated types
+│   └── main.tsx
+├── public/
+├── package.json
+├── vite.config.ts
+└── tsconfig.json
+```
+
+### Frontend Implementation Policy
+
+- `features/graph/state/` は `GraphViewMode`, `ExploreDepthPreset`, `PathSearchMode`, `ExplorePanelState`, `GraphLayerName` を中心に管理する
+- `features/graph/api/` は `GetGraph`, `ExpandNeighbors`, `FindPaths`, `GetGraphEntityDetail` の呼び出しを feature 内に閉じる
+- `features/stats/` は `PipelineMetrics`, `ExtractionMetrics`, `EvaluationMetrics`, `ErrorMetrics`, `NormalizationMetrics` ごとに画面を分ける
+- `generated/` の型はそのまま UI に露出させず、feature ごとの view model に変換して使う
+
+---
+
+## Backend Architecture
+
+Go バックエンドの各レイヤーは一方向にのみ依存し、循環参照を禁止する。
 
 ```
 handler → service → repository / infra
@@ -14,7 +94,7 @@ proto 生成型はワイヤー形式として `handler` 層でのみ使用する
 
 ---
 
-## ディレクトリ構造
+## Backend Directory Structure
 
 ```
 backend/
@@ -195,6 +275,26 @@ type CachedClient struct {
 
 ---
 
+## Shared Contract and Code Generation
+
+```
+proto/
+└── actionrev/graph/v1/
+    ├── document.proto
+    ├── graph.proto
+    ├── graph_types.proto
+    ├── node.proto
+    ├── monitoring.proto
+    └── ...
+```
+
+- `proto/` は frontend / backend の共有契約の正本とする
+- backend は `gen/` に Go コードを生成する
+- frontend は `src/generated/` に Connect client と型を生成する
+- `PathEvidenceRef`, `GraphProjectionScope`, `DocumentLifecycleState` など family 名を契約の型名として共有する
+
+---
+
 ## 依存性注入 (DI)
 
 `wire` や `fx` は使用せず、`cmd/server/main.go` でコンストラクタを手動で組み立てる。
@@ -233,6 +333,7 @@ func main() {
 ```makefile
 generate:   # proto → Go コード生成 (buf generate)
 build:      # go build ./cmd/server
+web:        # frontend ローカル起動
 test:       # go test ./...
 lint:       # golangci-lint run
 run:        # ローカル起動 (docker compose up)
