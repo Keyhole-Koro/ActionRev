@@ -19,6 +19,8 @@
 - `documents.status` を `failed` に更新する
 - 失敗理由をログに記録する
 - 再処理可能な設計とする
+- `StartProcessing` は upload 完了済みかつ `documents.status=uploaded` の document のみ受け付ける
+- upload 未完了や不正な状態遷移はジョブを起動せず、同期エラーとして返す
 
 ## Discord Webhook Notifications
 
@@ -108,8 +110,8 @@ Discord の Incoming Webhook を使って管理者チャンネルに通知する
 
 | | free | pro |
 | --- | --- | --- |
-| ストレージ | 1GB | 20GB |
-| ファイルサイズ | 10MB | 200MB |
+| ストレージ | 1GB | 50GB |
+| ファイルサイズ | 50MB | 500MB |
 | アップロード/日 | 10件 | 200件 |
 | メンバー数 | 3人 | 20人 |
 | extraction_depth | `summary` のみ | `full` + `summary` |
@@ -236,3 +238,11 @@ push to main:
 - PDF 抽出: Gemini File API を使用する
 - 正規化ツール approval: LLM スコア ≥ 0.9 で自動承認、< 0.9 で人間レビュー（Discord 通知）
 - ファイルアップロード: フロントから GCS へ署名付き URL で直接アップロードする
+- 認証: Firebase Auth + Google OAuth を採用（認証なし MVP フェーズなし）
+
+## Open Issues
+
+- Gemini の出力スキーマとリトライ戦略の詳細
+- ノード統合ルールの厳密度
+- フロントの可視化ライブラリ選定
+- proto の package 分割方針

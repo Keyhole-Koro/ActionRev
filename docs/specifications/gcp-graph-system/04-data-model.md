@@ -83,7 +83,7 @@ Workspace
 
 #### Status Values
 
-- `uploaded`
+- `uploaded` : メタデータ登録とファイル upload 完了後、解析開始前
 - `pending_normalization` : 正規化ツールの承認待ちで処理を停止中
 - `processing`
 - `completed`
