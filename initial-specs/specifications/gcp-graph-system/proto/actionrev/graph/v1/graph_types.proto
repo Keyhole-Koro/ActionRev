@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package actionrev.graph.v1;
+
+option go_package = "github.com/actionrev/backend/gen/actionrev/graph/v1;graphv1";
+
+// Core graph data types shared across graph, node, and related services.
+
+message Node {
+  string id = 1;
+  string document_id = 2;
+  string label = 3;
+  int32 level = 4;
+  NodeCategory category = 5;
+  NodeEntityType entity_type = 6;
+  string description = 7;
+  string summary_html = 8;
+  string source_chunk_id = 9;
+  double confidence = 10;
+  string created_at = 11;
+  string canonical_node_id = 12;
+  NodeScope scope = 13;
+}
+
+message Edge {
+  string id = 1;
+  string document_id = 2;
+  string source = 3;
+  string target = 4;
+  EdgeType type = 5;
+  string description = 6;
+  double weight = 7;
+  string source_chunk_id = 8;
+  string created_at = 9;
+  NodeScope scope = 10;
+}
+
+message Graph {
+  string workspace_id = 1;
+  string document_id = 2;
+  repeated Node nodes = 3;
+  repeated Edge edges = 4;
+  bool cross_document = 5;
+}
+
+enum NodeCategory {
+  NODE_CATEGORY_UNSPECIFIED = 0;
+  NODE_CATEGORY_CONCEPT = 1;
+  NODE_CATEGORY_ENTITY = 2;
+  NODE_CATEGORY_CLAIM = 3;
+  NODE_CATEGORY_EVIDENCE = 4;
+  NODE_CATEGORY_COUNTER = 5;
+}
+
+enum NodeEntityType {
+  NODE_ENTITY_TYPE_UNSPECIFIED = 0;
+  NODE_ENTITY_TYPE_ORGANIZATION = 1;
+  NODE_ENTITY_TYPE_PERSON = 2;
+  NODE_ENTITY_TYPE_METRIC = 3;
+  NODE_ENTITY_TYPE_DATE = 4;
+  NODE_ENTITY_TYPE_LOCATION = 5;
+}
+
+enum NodeScope {
+  NODE_SCOPE_UNSPECIFIED = 0;
+  NODE_SCOPE_DOCUMENT = 1;
+  NODE_SCOPE_CANONICAL = 2;
+}
+
+enum EdgeType {
+  EDGE_TYPE_UNSPECIFIED = 0;
+  EDGE_TYPE_HIERARCHICAL = 1;
+  EDGE_TYPE_SUPPORTS = 2;
+  EDGE_TYPE_CONTRADICTS = 3;
+  EDGE_TYPE_RELATED_TO = 4;
+  EDGE_TYPE_MEASURED_BY = 5;
+  EDGE_TYPE_INVOLVES = 6;
+  EDGE_TYPE_CAUSES = 7;
+  EDGE_TYPE_EXEMPLIFIES = 8;
+}

@@ -4,16 +4,12 @@ package actionrev.graph.v1;
 
 option go_package = "github.com/actionrev/backend/gen/actionrev/graph/v1;graphv1";
 
-import "actionrev/graph/v1/common.proto";
+import "actionrev/graph/v1/graph_types.proto";
 
 service GraphService {
   rpc GetGraph(GetGraphRequest) returns (GetGraphResponse);
   rpc ExpandNeighbors(ExpandNeighborsRequest) returns (ExpandNeighborsResponse);
   rpc FindPaths(FindPathsRequest) returns (FindPathsResponse);
-  rpc GetPipelineStats(GetPipelineStatsRequest) returns (GetPipelineStatsResponse);
-  rpc GetExtractionStats(GetExtractionStatsRequest) returns (GetExtractionStatsResponse);
-  rpc GetEvaluationTrend(GetEvaluationTrendRequest) returns (GetEvaluationTrendResponse);
-  rpc ListFailedDocuments(ListFailedDocumentsRequest) returns (ListFailedDocumentsResponse);
 }
 
 message GetGraphRequest {
@@ -25,6 +21,10 @@ message GetGraphRequest {
   string source_filename_filter = 6;
   bool resolve_aliases = 7;
   repeated EdgeType edge_type_filters = 8;
+}
+
+message GetGraphResponse {
+  Graph graph = 1;
 }
 
 message ExpandNeighborsRequest {
@@ -66,73 +66,4 @@ message GraphPath {
 message FindPathsResponse {
   Graph graph = 1;
   repeated GraphPath paths = 2;
-}
-
-message GetGraphResponse {
-  Graph graph = 1;
-}
-
-// --- Stats RPCs ---
-
-message GetPipelineStatsRequest {
-  string since = 1; // ISO 8601 日付（省略時: 過去30日）
-}
-
-message StageLatency {
-  string stage = 1;
-  double avg_sec = 2;
-  double p95_sec = 3;
-}
-
-message GetPipelineStatsResponse {
-  repeated StageLatency stage_latencies = 1;
-  int32 completed_count = 2;
-  int32 failed_count = 3;
-  int32 total_llm_calls = 4;
-  double total_cost_usd = 5;
-}
-
-message GetExtractionStatsRequest {
-  string document_id = 1; // 省略時は全ドキュメント集計
-}
-
-message GetExtractionStatsResponse {
-  map<string, int32> nodes_by_level = 1;    // "0" -> 3, "1" -> 12, ...
-  map<string, int32> nodes_by_category = 2; // "concept" -> 58, ...
-  int32 pass1_node_count = 3;
-  int32 pass2_node_count = 4;
-  int32 merged_node_count = 5;
-  int32 added_edge_count = 6;
-}
-
-message WeeklyMetric {
-  string week = 1; // "2026-W12"
-  double precision = 2;
-  double recall = 3;
-  map<string, double> level_accuracy = 4; // "0" -> 0.95, ...
-}
-
-message GetEvaluationTrendRequest {
-  int32 weeks = 1; // 取得週数（デフォルト: 8）
-}
-
-message GetEvaluationTrendResponse {
-  repeated WeeklyMetric metrics = 1;
-}
-
-message FailedDocument {
-  string document_id = 1;
-  string filename = 2;
-  string error_stage = 3;
-  string error_message = 4;
-  string failed_at = 5;
-}
-
-message ListFailedDocumentsRequest {
-  string since = 1;
-  int32 limit = 2;
-}
-
-message ListFailedDocumentsResponse {
-  repeated FailedDocument documents = 1;
 }

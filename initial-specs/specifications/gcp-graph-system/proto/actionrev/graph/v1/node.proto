@@ -5,6 +5,7 @@ package actionrev.graph.v1;
 option go_package = "github.com/actionrev/backend/gen/actionrev/graph/v1;graphv1";
 
 import "actionrev/graph/v1/common.proto";
+import "actionrev/graph/v1/graph_types.proto";
 
 service NodeService {
   rpc GetGraphEntityDetail(GetGraphEntityDetailRequest) returns (GetGraphEntityDetailResponse);
