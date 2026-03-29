@@ -1,0 +1,8 @@
+# 正規化ツールが使用できるライブラリ
+# ネットワークアクセス不要なライブラリのみ許可する
+# (GCS アクセスは runner.py が担うため、ツールスクリプト自体は純粋な変換処理のみ)
+
+google-cloud-storage==2.18.2   # GCS 入出力 (runner.py のみ使用)
+chardet==5.2.0                  # 文字コード検出
+ftfy==6.2.0                     # Unicode テキスト修正 (mojibake 修復)
+unicodedata2==15.1.0            # Unicode 正規化

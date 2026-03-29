@@ -1,0 +1,132 @@
+name: Deploy (prod)
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "デプロイするイメージタグ (例: sha-abc1234)"
+        required: true
+      skip_terraform:
+        description: "Terraform apply をスキップ (アプリのみ更新する場合)"
+        type: boolean
+        default: false
+
+env:
+  REGION: asia-northeast1
+  AR_REPO: actionrev
+  ENV: prod
+
+jobs:
+  # --- Plan: 何が変わるか確認 ---
+  terraform-plan:
+    name: Terraform plan (prod)
+    runs-on: ubuntu-latest
+    environment: prod-plan   # レビュアーなし・計画確認用
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_PROD }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.7"
+
+      - name: Terraform init
+        if: ${{ !inputs.skip_terraform }}
+        working-directory: infra/terraform
+        run: terraform init -backend-config=backends/prod.hcl
+
+      - name: Terraform plan
+        if: ${{ !inputs.skip_terraform }}
+        working-directory: infra/terraform
+        run: |
+          terraform plan \
+            -var-file=envs/prod.tfvars \
+            -var="backend_image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_PROD }}/${{ env.AR_REPO }}/backend:${{ inputs.image_tag }}" \
+            -var="sandbox_image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_PROD }}/${{ env.AR_REPO }}/sandbox:${{ inputs.image_tag }}" \
+            -out=tfplan
+
+      - name: Upload plan
+        if: ${{ !inputs.skip_terraform }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-prod
+          path: infra/terraform/tfplan
+          retention-days: 1
+
+  # --- Apply: 人間の承認後に実行 ---
+  # GitHub Environment "prod" に Required reviewers を設定すること
+  terraform-apply:
+    name: Terraform apply (prod)
+    needs: terraform-plan
+    runs-on: ubuntu-latest
+    environment: prod   # Required reviewers で承認が必要
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_PROD }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.7"
+
+      - name: Download plan
+        if: ${{ !inputs.skip_terraform }}
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-prod
+          path: infra/terraform
+
+      - name: Terraform init
+        if: ${{ !inputs.skip_terraform }}
+        working-directory: infra/terraform
+        run: terraform init -backend-config=backends/prod.hcl
+
+      - name: Terraform apply (prod)
+        if: ${{ !inputs.skip_terraform }}
+        working-directory: infra/terraform
+        run: terraform apply -auto-approve tfplan
+
+      # --- Cloud Run: アプリデプロイ ---
+      - name: Deploy backend to Cloud Run (prod)
+        run: |
+          gcloud run deploy actionrev-backend-prod \
+            --image="${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_PROD }}/${{ env.AR_REPO }}/backend:${{ inputs.image_tag }}" \
+            --region="${{ env.REGION }}" \
+            --project="${{ secrets.GCP_PROJECT_ID_PROD }}" \
+            --quiet
+
+      - name: Update sandbox Cloud Run Job (prod)
+        run: |
+          gcloud run jobs update actionrev-sandbox-prod \
+            --image="${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_PROD }}/${{ env.AR_REPO }}/sandbox:${{ inputs.image_tag }}" \
+            --region="${{ env.REGION }}" \
+            --project="${{ secrets.GCP_PROJECT_ID_PROD }}" \
+            --quiet
+
+      - name: Notify Discord (prod deploy)
+        if: always()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          STATUS: ${{ job.status }}
+        run: |
+          EMOJI=$([ "$STATUS" = "success" ] && echo "🚀" || echo "🔥")
+          curl -s -X POST "$DISCORD_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "{\"content\":\"${EMOJI} prod デプロイ ${STATUS}: \`${{ inputs.image_tag }}\` by ${{ github.actor }}\"}"

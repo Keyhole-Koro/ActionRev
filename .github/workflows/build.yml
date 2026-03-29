@@ -1,0 +1,94 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+
+# main ブランチへの同時プッシュ時は最新のみ実行する
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGION: asia-northeast1
+  AR_REPO: actionrev
+
+jobs:
+  build:
+    name: Build & push Docker images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # Workload Identity Federation に必要
+
+    outputs:
+      image_tag: ${{ steps.tag.outputs.tag }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- GCP 認証 (Workload Identity Federation) ---
+      # 事前セットアップ: infra/scripts/bootstrap.sh 後に以下を実行
+      #   gcloud iam workload-identity-pools create github \
+      #     --location=global --project=$PROJECT_ID
+      #   gcloud iam workload-identity-pools providers create-oidc github-provider \
+      #     --workload-identity-pool=github --issuer-uri=https://token.actions.githubusercontent.com \
+      #     --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository"
+      #   gcloud iam service-accounts add-iam-policy-binding \
+      #     terraform@$PROJECT_ID.iam.gserviceaccount.com \
+      #     --member="principalSet://iam.googleapis.com/.../attribute.repository/keyhole-koro/actionrev" \
+      #     --role=roles/iam.workloadIdentityUser
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_STAGE }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Determine image tag
+        id: tag
+        run: echo "tag=sha-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      # --- Backend (Go) ---
+      - name: Build backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          file: backend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/backend:${{ steps.tag.outputs.tag }}
+            ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/backend:latest
+          cache-from: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/backend:cache
+          cache-to: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/backend:cache,mode=max
+
+      # --- Sandbox (Python) ---
+      - name: Build sandbox image
+        uses: docker/build-push-action@v6
+        with:
+          context: sandbox
+          file: sandbox/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/sandbox:${{ steps.tag.outputs.tag }}
+            ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/sandbox:latest
+          cache-from: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/sandbox:cache
+          cache-to: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/sandbox:cache,mode=max
+
+  # CI が通ってからビルドを行う
+  check-ci:
+    name: Wait for CI
+    needs: []
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "CI check passed (build triggered after ci.yml via branch protection)"
+
+  trigger-deploy-stage:
+    name: Trigger stage deploy
+    needs: [build]
+    uses: ./.github/workflows/deploy-stage.yml
+    with:
+      image_tag: ${{ needs.build.outputs.image_tag }}
+    secrets: inherit
