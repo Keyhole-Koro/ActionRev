@@ -203,3 +203,4 @@ Discord の Incoming Webhook を使って管理者チャンネルに通知する
 ## Open Issues
 
 - Gemini の出力スキーマ詳細（field 必須/任意、enum の許容値、repair 対象の範囲）
+- 差分 graph 再計算の伝播範囲を 2-hop から広げる必要があるか

@@ -2,7 +2,7 @@
 
 ## System Overview
 
-本システムは、ユーザーがアップロードしたファイルを `Cloud Storage` に保存し、`Cloud Run` 上の `Go` バックエンドが処理を制御する。AI パイプラインでは、まず正規化ツール層が原本を整形し、その後テキスト抽出と chunk 分割を行う。必要に応じて `Vertex AI Gemini` に整形スクリプト生成を依頼し、生成された Python ツールをサンドボックスで dry-run または実行する。その後 `Vertex AI Gemini` により意味構造を JSON 形式で抽出し、`BigQuery` にノード・エッジ・メタデータを保存する。フロントエンドは `TypeScript + React Flow` で実装し、`Firebase Hosting` から配信する。フロントエンドとバックエンド間の同期通信は `Connect RPC` を用いる。
+本システムは、ユーザーがアップロードしたファイルを `Cloud Storage` に保存し、`Cloud Run` 上の `Go` バックエンドが処理を制御する。AI パイプラインでは、まず正規化ツール層が原本を整形し、その後テキスト抽出と chunk 分割を行う。必要に応じて `Vertex AI Gemini` に整形スクリプト生成を依頼し、生成された Python ツールをサンドボックスで dry-run または実行する。その後 `Vertex AI Gemini` により意味構造を JSON 形式で抽出し、`BigQuery` にノード・エッジ・メタデータを正本として保存する。canonical 化済みの探索用グラフは `Spanner Graph` に同期し、近傍展開や多段経路検索に利用する。フロントエンドは `TypeScript + React Flow` で実装し、`Firebase Hosting` から配信する。フロントエンドとバックエンド間の同期通信は `Connect RPC` を用いる。
 
 ## High-Level Architecture
 
@@ -25,6 +25,7 @@
            +--> [Sandbox Runner]
            +--> [Vertex AI Gemini]
            +--> [BigQuery]
+           +--> [Spanner Graph]
            |
            +--> [Cloud Tasks] optional
 ```
@@ -37,7 +38,8 @@
 - `Tool Registry`: 正規化ツール定義と履歴保存
 - `Sandbox Runner`: Python 正規化ツールの隔離実行
 - `Vertex AI Gemini`: ノード・エッジ抽出
-- `BigQuery`: ドキュメント、chunk、ノード、エッジの保存
+- `BigQuery`: ドキュメント、chunk、ノード、エッジ、評価、統計の正本保存
+- `Spanner Graph`: 探索用グラフ、近傍展開、多段経路検索
 - `Protocol Buffers`: RPC スキーマ定義
 
 ## Logical Processing Flow
@@ -54,7 +56,8 @@
 10. Gemini が JSON 形式でノード・エッジ候補を返す
 11. API が重複統合と正規化を実施する
 12. `BigQuery` に document/chunk/node/edge を保存する
-13. フロントエンドが `Connect RPC` でグラフを取得して描画する
+13. canonical 化済み graph を `Spanner Graph` に同期する
+14. フロントエンドが `Connect RPC` でグラフ取得・近傍展開・経路検索を行う
 
 ## Component Specification
 
@@ -66,6 +69,8 @@
 - 解析ステータス表示
 - ノードグラフ表示
 - ノード詳細表示
+- 対話的近傍探索
+- 経路検索結果の可視化
 
 #### Stack
 
@@ -97,7 +102,9 @@
 - Gemini 呼び出し
 - ノード統合
 - BigQuery 書き込み
+- Spanner Graph 同期
 - グラフ取得
+- 近傍探索 / 経路探索
 - 非同期ジョブ投入
 
 #### Stack
@@ -175,3 +182,20 @@
 #### Service
 
 - `BigQuery`
+
+### Graph Query Store
+
+#### Responsibility
+
+- canonical 化済み graph の保持
+- 近傍展開、到達可能性、多段経路検索
+- 対話的な graph traversal の低レイテンシ提供
+
+#### Service
+
+- `Spanner Graph`
+
+#### Constraints
+
+- 正本は `BigQuery` とし、`Spanner Graph` は探索向けの複製とする
+- 同期遅延があっても、評価・再処理・監査は常に `BigQuery` を参照する

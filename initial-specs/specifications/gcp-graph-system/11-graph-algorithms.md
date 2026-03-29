@@ -2,7 +2,7 @@
 
 ## Overview
 
-トピックマッピングと横断グラフ構築が完了した後、グラフアルゴリズムを適用して概念の重要度・クラスタ・関係経路を分析する。アルゴリズム処理は Cloud Run Jobs でバッチ実行し、結果を BigQuery に保存してフロントエンドの可視化に利用する。
+トピックマッピングと横断グラフ構築が完了した後、グラフアルゴリズムを適用して概念の重要度・クラスタ・関係経路を分析する。`BigQuery` は正本保存・分析・バッチ計算結果保持に使い、`Spanner Graph` は対話的な近傍探索と多段経路検索に使う。アルゴリズム処理は Cloud Run Jobs でバッチ実行し、結果を BigQuery に保存してフロントエンドの可視化に利用する。
 
 ## 対象アルゴリズム
 
@@ -67,11 +67,11 @@
 
 ## グラフエンジンの選択
 
-### 初期：BigQuery + Cloud Run Jobs
+### 正本・分析: BigQuery + Cloud Run Jobs
 
-- BigQuery の再帰 CTE で最短経路・到達可能性を実装する
+- `BigQuery` に canonical 化前後の node / edge と評価結果を保存する
 - NetworkX / igraph を Cloud Run Jobs で動かし、計算結果を BQ に書き戻す
-- 実装コストが低く、既存スタックから外れない
+- `/dev/stats`、評価トレンド、再処理、監査は `BigQuery` を参照する
 
 ```sql
 -- BigQuery での多段経路の例（再帰 CTE）
@@ -88,12 +88,12 @@ WITH RECURSIVE paths AS (
 SELECT * FROM paths
 ```
 
-### 将来：Spanner Graph
+### 探索: Spanner Graph
 
 - GQL（Graph Query Language）ネイティブ対応で多段エッジトラバーサルが直感的に書ける
 - `MATCH (n)-[e*1..5]->(m)` のような経路指定が可能
-- BigQuery との二重持ちになるが、クエリ特性が大きく異なるため大規模グラフでは有効
-- BQ をコールドデータ・分析用途、Spanner Graph をリアルタイム探索用途で使い分ける
+- `BigQuery` との二重持ちになるが、探索系クエリ特性が大きく異なるため併用する
+- `BigQuery` を正本・分析用途、`Spanner Graph` をリアルタイム探索用途で使い分ける
 
 ```
 -- Spanner Graph GQL の例
@@ -102,19 +102,52 @@ MATCH (start {id: @start_node_id})-[*1..5]->(m)
 RETURN m.label, m.type
 ```
 
+### 同期方針
+
+- canonical 化が確定した node / edge を `BigQuery` から `Spanner Graph` に同期する
+- 探索用 graph には `approved` alias のみ反映する
+- 同期は document 完了後と再処理後に実行する
+- 一時的な同期遅延は許容するが、評価・監査・運用判断は常に `BigQuery` を正とする
+
 ## フロントエンドへの反映
 
 - `GetGraph` のレスポンスに `node_scores` を JOIN して返す
-- スコアに応じてノードのサイズ・色・強調表示を変える
-- コミュニティ ID でノードをグループ色分けする
+- 初期は `pagerank` による軽微なサイズ強調と、`community_id` によるクラスタ色分けのみを行う
+- 中心性の詳細値はノード詳細パネルまたは tooltip で表示し、複数スコアの同時可視化は初期スコープ外とする
+- `ExpandNeighbors` の結果は段階的にサブグラフとして追加表示する
+- `FindPaths` の結果は path 単位で強調表示し、関係の種類と hop 数を UI に表示する
 
 ## 実行タイミング
 
 | タイミング | 用途 |
 | --- | --- |
-| document 処理完了後に即時実行 | document 単位の中心性・PageRank 更新 |
+| document 処理完了後に即時実行 | 差分更新（追加 document に関連する PageRank / community_id の再計算と Spanner Graph 同期） |
 | 夜間バッチ（BigQuery scheduled query）| 横断グラフ全体の再計算 |
 | 手動トリガー | 再処理・デバッグ |
+
+### 初期スコープのアルゴリズム
+
+- document 完了時の差分更新では `pagerank` と `community_id` のみを計算する
+- `degree_centrality`, `betweenness_centrality`, 最短経路系は夜間バッチまたは将来対応とする
+
+### トリガー方針
+
+- document 処理完了後は Pub/Sub イベントを起点に Cloud Run Jobs を起動する
+- 夜間全体再計算は BigQuery scheduled query または Cloud Scheduler から Cloud Run Jobs を起動する
+- 手動トリガーは運用者向け管理コマンドまたは `/dev/stats` から実行する
+- Spanner Graph 同期ジョブも同じイベントチェーンで起動する
+
+### 再計算スコープ
+
+- 即時実行では、新規 document に紐づく canonical node とその 2-hop 近傍を差分再計算対象とする
+- 夜間バッチでは全 canonical graph を再計算し、差分更新で発生したドリフトを解消する
+- 差分更新に失敗した場合は document 処理自体を失敗にせず、夜間バッチでの回復に委ねる
+
+### Spanner Graph の扱い
+
+- 初期から `BigQuery` と `Spanner Graph` を併用する
+- `GetGraph` は `BigQuery`、`ExpandNeighbors` / `FindPaths` は `Spanner Graph` を主参照先とする
+- 集計値やランキングの正本は `BigQuery` に保持し、探索時に必要な最小限の属性だけを `Spanner Graph` に複製する
 
 ## 処理フローの全体像
 
@@ -129,6 +162,10 @@ RETURN m.label, m.type
       ↓
 [横断グラフ構築]
       ↓
+[BigQuery 正本保存]
+      ↓
+[Spanner Graph 同期]
+      ↓
 [グラフアルゴリズム適用（Cloud Run Jobs）]
       ↓
 [可視化（React Flow）]
@@ -136,7 +173,4 @@ RETURN m.label, m.type
 
 ## Open Issues
 
-- Cloud Run Jobs のトリガー方法（document 処理完了後の Pub/Sub か、定期実行か）
-- Spanner Graph への移行タイミングと BQ との使い分け方針
-- アルゴリズムの再計算スコープ（全グラフか差分か）
-- フロントでのスコア可視化の UX（サイズ変化・色分け・ツールチップ）
+- 差分更新の 2-hop 近傍で十分か、より広い伝播範囲が必要か

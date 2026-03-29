@@ -39,6 +39,8 @@ message Node {
   string source_chunk_id = 9;
   double confidence = 10;
   string created_at = 11;
+  string canonical_node_id = 12;
+  NodeScope scope = 13;
 }
 
 message Edge {
@@ -51,12 +53,15 @@ message Edge {
   double weight = 7;
   string source_chunk_id = 8;
   string created_at = 9;
+  NodeScope scope = 10;
 }
 
 message Graph {
   string document_id = 1;
   repeated Node nodes = 2;
   repeated Edge edges = 3;
+  string workspace_id = 4;
+  bool cross_document = 5;
 }
 
 message Job {
@@ -128,6 +133,12 @@ enum NodeEntityType {
   NODE_ENTITY_TYPE_METRIC = 3;
   NODE_ENTITY_TYPE_DATE = 4;
   NODE_ENTITY_TYPE_LOCATION = 5;
+}
+
+enum NodeScope {
+  NODE_SCOPE_UNSPECIFIED = 0;
+  NODE_SCOPE_DOCUMENT = 1;
+  NODE_SCOPE_CANONICAL = 2;
 }
 
 enum EdgeType {

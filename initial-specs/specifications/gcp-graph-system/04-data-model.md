@@ -106,10 +106,13 @@ Workspace
 
 詳細な抽出戦略は [12-extraction-strategy.md](12-extraction-strategy.md) を参照。
 
+`node_id` は表示ラベルや LLM が返す `local_id` から直接導出せず、永続化時にバックエンドがグローバル一意な値を採番する。初期実装では `nd_<ULID>` 形式を推奨する。
+
 | Column | Type | Description |
 | --- | --- | --- |
 | document_id | STRING | ドキュメント識別子 |
 | node_id | STRING | ノード識別子 |
+| extraction_local_id | STRING | LLM 抽出時のローカル識別子（document 内で追跡用） |
 | label | STRING | 表示ラベル |
 | level | INT64 | 階層レベル（0=ドメイン / 1=概念 / 2=施策・アクション / 3=詳細） |
 | category | STRING | ノードカテゴリ（`concept` / `entity` / `claim` / `evidence` / `counter`） |
@@ -119,6 +122,10 @@ Workspace
 | source_chunk_id | STRING | 出典 chunk |
 | confidence | FLOAT64 | 生成信頼度 |
 | created_at | TIMESTAMP | 作成日時 |
+
+- API 返却時の `canonical_node_id` は `node_aliases` を解決して補完する派生属性であり、`nodes` テーブルの永続カラムには含めない
+- `GetGraph` の node は `id = node_id`, `scope = document` を返す
+- `ExpandNeighbors` / `FindPaths` の node は `id = canonical_node_id`, `scope = canonical` を返す
 
 #### Node Category Values
 
@@ -139,10 +146,13 @@ Workspace
 
 詳細な抽出戦略は [12-extraction-strategy.md](12-extraction-strategy.md) を参照。
 
+`edge_id` も `source_node_id` / `target_node_id` / `edge_type` の連結値ではなく、永続化時にバックエンドがグローバル一意な値を採番する。初期実装では `ed_<ULID>` 形式を推奨する。
+
 | Column | Type | Description |
 | --- | --- | --- |
 | document_id | STRING | ドキュメント識別子 |
 | edge_id | STRING | エッジ識別子 |
+| extraction_local_id | STRING | LLM 抽出時のローカル識別子（document 内で追跡用、任意） |
 | source_node_id | STRING | 始点ノード |
 | target_node_id | STRING | 終点ノード |
 | edge_type | STRING | エッジ種別 |
@@ -150,6 +160,10 @@ Workspace
 | weight | FLOAT64 | 重み |
 | source_chunk_id | STRING | 出典 chunk |
 | created_at | TIMESTAMP | 作成日時 |
+
+- API 返却時の `Edge.scope` は派生属性であり、`edges` テーブルの永続カラムには含めない
+- `GetGraph` の edge は `scope = document` を返す
+- `ExpandNeighbors` / `FindPaths` の edge は `scope = canonical` を返す
 
 #### Edge Type Values
 
@@ -168,14 +182,35 @@ Workspace
 
 トピックのカノニカル化とオントロジー統合に利用する。詳細は [10-topic-mapping.md](10-topic-mapping.md) を参照。
 
+`canonical_node_id` は文書内 `node_id` とは別の識別空間として扱う。初期実装では `cn_<ULID>` 形式を推奨する。
+
 | Column | Type | Description |
 | --- | --- | --- |
+| workspace_id | STRING | 所属ワークスペース識別子 |
 | canonical_node_id | STRING | 正規ノード識別子 |
 | alias_node_id | STRING | 統合元ノード識別子 |
 | alias_label | STRING | 表記揺れラベル |
 | similarity_score | FLOAT64 | 類似スコア |
 | merge_status | STRING | `suggested` / `approved` / `rejected` |
 | created_at | TIMESTAMP | 作成日時 |
+
+### canonical_nodes
+
+探索用 graph と document 横断 UI の主キーとして使う canonical node の属性を保持する。`Spanner Graph` への同期元になる。
+
+| Column | Type | Description |
+| --- | --- | --- |
+| workspace_id | STRING | 所属ワークスペース識別子 |
+| canonical_node_id | STRING | 正規ノード識別子 |
+| label | STRING | canonical 表示ラベル |
+| category | STRING | 代表カテゴリ |
+| level_hint | INT64 | 代表 level |
+| description | STRING | canonical 説明 |
+| representative_node_id | STRING | 代表元 node_id |
+| updated_at | TIMESTAMP | 更新日時 |
+
+- `canonical_nodes.canonical_node_id` は探索 API の `Node.id` として露出する
+- document ノードと canonical ノードの対応は `node_aliases.alias_node_id -> canonical_node_id` で追跡する
 
 ### document_topic_mappings
 
@@ -202,6 +237,21 @@ Workspace
 | score | FLOAT64 | スコア値 |
 | metadata | JSON | アルゴリズム固有の追加情報 |
 | computed_at | TIMESTAMP | 計算日時 |
+
+### graph_sync_jobs
+
+`BigQuery` 正本から `Spanner Graph` への同期状態を管理する。
+
+| Column | Type | Description |
+| --- | --- | --- |
+| sync_job_id | STRING | 同期ジョブ識別子 |
+| workspace_id | STRING | 対象ワークスペース |
+| document_id | STRING | 対象 document（全体同期時は null 可） |
+| status | STRING | `queued` / `running` / `completed` / `failed` |
+| synced_node_count | INT64 | 同期ノード数 |
+| synced_edge_count | INT64 | 同期エッジ数 |
+| started_at | TIMESTAMP | 開始日時 |
+| completed_at | TIMESTAMP | 完了日時 |
 
 ### processing_jobs
 

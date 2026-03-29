@@ -42,7 +42,7 @@ backend/
 │   │
 │   ├── service/               # ビジネスロジック層
 │   │   ├── document.go        # ドキュメント登録・ステータス管理
-│   │   ├── graph.go           # グラフ取得・フィルタリング
+│   │   ├── graph.go           # GetGraph・ExpandNeighbors・FindPaths
 │   │   ├── workspace.go       # ワークスペース CRUD・メンバー管理
 │   │   ├── user.go            # SyncUser・GetMe
 │   │   ├── billing.go         # Stripe Checkout / Portal / Webhook 処理
@@ -63,6 +63,8 @@ backend/
 │   │   │   ├── edge.go
 │   │   │   ├── workspace.go
 │   │   │   └── user.go
+│   │   ├── spannergraph/
+│   │   │   └── graph.go       # 近傍探索・経路検索・graph 同期
 │   │   └── gcs/
 │   │       └── upload.go      # 署名付き URL 発行・オブジェクト操作
 │   │
@@ -79,6 +81,8 @@ backend/
 │   │   │   └── webhook.go     # Webhook イベント処理
 │   │   ├── discord/
 │   │   │   └── webhook.go     # 通知送信 (8 イベント)
+│   │   ├── spanner/
+│   │   │   └── graph.go       # Spanner Graph クライアント
 │   │   └── sandbox/
 │   │       └── runner.go      # Cloud Run Jobs 起動・結果ポーリング
 │   │
@@ -157,6 +161,12 @@ type NodeRepository interface {
     ListByDocument(ctx context.Context, documentID string) ([]domain.Node, error)
 }
 // ...
+
+type GraphQueryRepository interface {
+    ExpandNeighbors(ctx context.Context, seedNodeID string, depth int, edgeTypes []domain.EdgeType, limitPerHop int) (domain.Graph, error)
+    FindPaths(ctx context.Context, sourceNodeID string, targetNodeID string, maxDepth int, edgeTypes []domain.EdgeType, limit int) (domain.Graph, []domain.GraphPath, error)
+    SyncCanonicalGraph(ctx context.Context, nodes []domain.Node, edges []domain.Edge) error
+}
 ```
 
 ### pipeline

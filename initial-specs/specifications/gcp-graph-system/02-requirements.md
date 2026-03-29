@@ -46,6 +46,7 @@
 ### Graph Persistence
 
 - 抽出した document、chunk、node、edge を `BigQuery` に保存できること
+- canonical 化済み node / edge を探索用グラフとして `Spanner Graph` に同期できること
 - エッジには少なくとも `source_node_id`、`target_node_id`、`edge_type` を保持すること
 - ノードには少なくとも `label`、`type`、`description` を保持すること
 - ノードおよびエッジは出典 chunk を追跡できること
@@ -55,7 +56,10 @@
 - document 単位でノード一覧を取得できること
 - document 単位でエッジ一覧を取得できること
 - node type によるフィルタができること
-- 将来的に件数制限、深さ制限、relation type 指定ができること
+- 深さ制限、relation type 指定、件数制限付きで近傍探索ができること
+- 任意のノードから 1-hop, 2-hop, 3-hop の近傍展開ができること
+- 2ノード間の多段経路検索ができること
+- 複数 document 横断で canonical node を起点に探索できること
 
 ### Visualization
 
@@ -63,6 +67,8 @@
 - `level` または `category` に応じて見た目を区別できること
 - ノードクリックで詳細情報を表示できること
 - 出典 chunk を表示できること
+- ノードクリックを起点に近傍ノードを段階的に展開できること
+- 経路検索結果をサブグラフとして可視化できること
 
 ## Non-Functional Requirements
 
@@ -70,6 +76,7 @@
 
 - 初期は MB 級から数百 MB 級を対象とする
 - 将来的に GB 級ファイルや大量投入に対応できる構成へ拡張可能であること
+- 探索系 API は対話的操作に耐える低レイテンシ構成を持つこと
 
 ### Availability and Operability
 
@@ -88,6 +95,12 @@
 - API からのみファイルにアクセスできること
 - 認証認可は将来的に導入可能な構造とすること
 - 個人情報や機密情報を含む場合の保存ポリシーを定義可能であること
+
+### Storage Architecture
+
+- `BigQuery` は document/chunk/node/edge/eval/stats の正本保存と分析に使うこと
+- `Spanner Graph` は近傍展開、多段経路検索、対話的 traversal の本番クエリエンジンとして使うこと
+- `BigQuery` と `Spanner Graph` の間で canonical graph を同期できること
 
 ## Input and Output Specification
 
@@ -140,5 +153,7 @@
 - テキスト抽出と chunk 保存が行われること
 - Gemini からノード・エッジ JSON を取得できること
 - BigQuery に document/chunk/node/edge が保存されること
+- Spanner Graph に探索用 subgraph が同期されること
 - フロントで階層付きノードを含むグラフが表示されること
 - ノード詳細から出典 chunk を参照できること
+- ノード近傍展開と経路検索が UI から実行できること

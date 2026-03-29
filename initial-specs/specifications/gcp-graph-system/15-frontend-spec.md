@@ -2,7 +2,7 @@
 
 ## Overview
 
-フロントエンドは `TypeScript + React + React Flow` で実装し、`Firebase Hosting` から配信する。グラフの可視化を中心に、ファイルアップロード・処理ステータス確認・ノード詳細閲覧の3つのユースケースを担う。開発者向けに `/dev/stats` ルートで統計ビューワーを提供し、`Firebase Auth` のカスタムクレーム `role: "dev"` を持つユーザーのみ表示する。
+フロントエンドは `TypeScript + React + React Flow` で実装し、`Firebase Hosting` から配信する。グラフの可視化と対話的探索を中心に、ファイルアップロード・処理ステータス確認・ノード詳細閲覧・近傍展開・多段経路検索のユースケースを担う。開発者向けに `/dev/stats` ルートで統計ビューワーを提供し、`Firebase Auth` のカスタムクレーム `role: "dev"` を持つユーザーのみ表示する。
 
 ---
 
@@ -19,9 +19,9 @@
 
 ```
 ┌─────────────────────────────────────────────────┐
-│ Header: ActionRev                [ドキュメント一覧]│
+│ Header: ActionRev      [ドキュメント一覧] [経路検索]│
 ├──────────────┬──────────────────────────────────┤
-│              │  [レベル帯▼] [力学] [Claim]  🔍  │
+│              │ [レベル帯▼] [力学] [Claim] [1-hop] 🔍 │
 │  ドキュメント │ ─────────────────────────────── │
 │  一覧         │                                  │
 │              │         Graph Canvas             │
@@ -32,7 +32,7 @@
 │  [+ アップ   │                                  │
 │    ロード]   │                                  │
 ├──────────────┴──────────────────────────────────┤
-│ Node Detail Panel（ノードクリック時に展開）        │
+│ Node Detail / Explore Panel（ノードクリック時に展開）│
 └─────────────────────────────────────────────────┘
 ```
 
@@ -91,6 +91,15 @@ Canvas 右上のボタンでビューを切り替える。
 [レベル帯 ▼]  [力学]  [Claim]
 ```
 
+探索系の操作は同じツールバーに配置する。
+
+```
+[1-hop] [2-hop] [3-hop] [経路検索]
+```
+
+- `1-hop` / `2-hop` / `3-hop` は選択中ノードに対する近傍展開の深さ
+- `経路検索` は 2 ノード選択モードへ切り替える
+
 ---
 
 ## ノードの見た目
@@ -119,6 +128,7 @@ Canvas 右上のボタンでビューを切り替える。
 - ノード内に `label` を表示する
 - `level=3` はテキストを小さくする（10px）
 - `summary_html` が null のノードはラベルをイタリック表示してフォールバックを示す
+- `scope=canonical` のノードは二重 border と `canonical` バッジで document ノードと区別する
 
 ---
 
@@ -135,15 +145,17 @@ Canvas 右上のボタンでビューを切り替える。
 | `causes` | 矢印付き実線 | 紫 `#9B6DD9` |
 | `exemplifies` | 破線 | グレー `#AAA` |
 
+- `scope=canonical` の edge は glow またはやや太い線で描画し、document edge と区別する
+
 ---
 
-## ノード詳細パネル
+## ノード詳細・探索パネル
 
 ノードをクリックすると画面下部にパネルが展開する。
 
 ```
 ┌─────────────────────────────────────────────────┐
-│ [concept / level 2]  テレアポ施策        [×閉じる]│
+│ [concept / level 2] テレアポ施策   [1-hop][2-hop][起点]│
 ├─────────────────────────────────────────────────┤
 │                                                  │
 │  ┌── iframe (summary_html) ──────────────────┐  │
@@ -158,6 +170,10 @@ Canvas 右上のボタンでビューを切り替える。
 │  │ "テレアポ施策として月次100件を目標に..."    │  │
 │  └────────────────────────────────────────────┘  │
 │                                                  │
+│  探索操作                                         │
+│  [近傍を展開] [このノードを経路検索の起点にする]   │
+│  [このノードを終点にする] [展開を折りたたむ]       │
+│                                                  │
 │  関連ノード                                       │
 │  [販売戦略 ↑]  [スクリプト改善 ↓]  [CV率3.2% →] │
 └─────────────────────────────────────────────────┘
@@ -168,6 +184,68 @@ Canvas 右上のボタンでビューを切り替える。
 - `summary_html` が null の場合は `description` をプレーンテキストで表示する
 - 出典チャンクには `source_filename` とページ番号を表示する
 - 関連ノードは隣接エッジを辿って取得し、クリックで該当ノードにフォーカスする
+- 探索操作の `近傍を展開` は `ExpandNeighbors` を呼び、取得した subgraph を現在の canvas に追加する
+- `起点` / `終点` を設定後に `経路検索` を実行すると `FindPaths` を呼び、結果の path をハイライト表示する
+- 展開済み subgraph は document の初期 graph と区別できるよう外枠または薄い背景で表示する
+- `scope=canonical` のノード詳細では `canonical_node_id` と代表ラベルを表示し、document ノード詳細では `document_id` と出典 chunk を優先表示する
+- `scope=canonical` の edge を含む path は優先ハイライトし、document edge は補助的に薄く残す
+
+---
+
+## 対話的探索 UX
+
+### 近傍展開
+
+- ユーザーは任意のノードをクリックして `1-hop` / `2-hop` / `3-hop` 展開を実行できる
+- 展開結果は既存 graph に追加マージし、既存ノードと重複するノードは再利用する
+- 展開したノード・エッジはアニメーション付きでキャンバスに出現する
+- 追加分は `edge_type` ごとにフィルタできる
+- 展開の undo / collapse をサポートする
+
+### 経路検索
+
+- ユーザーは 2 ノードを `起点` / `終点` として選択できる
+- `経路検索` 実行後、候補 path をサイドパネルまたは上部トレイに一覧表示する
+- path を選ぶと対応ノード・エッジのみ強調表示し、他は半透明にする
+- 表示内容には hop 数、edge type の列、document 横断かどうかを含める
+
+### document 横断探索
+
+- 初期 graph は document 単位でロードする
+- 近傍展開・経路検索では canonical node を起点に document 横断の subgraph を追加表示できる
+- document 横断で取得したノードは border color で document ごとの差異を示す
+- 現在表示中の graph に対し `初期 document のみ` / `横断を含む` のトグルを用意する
+
+---
+
+## フロント状態設計
+
+探索 UX のため、フロントは「初期 graph」と「探索で追加した graph」を分けて保持する。
+
+### state の分離
+
+- `baseGraph`: `GetGraph` で取得した document 初期表示用 graph
+- `expandedGraph`: `ExpandNeighbors` で追加した subgraph
+- `pathSearchGraph`: `FindPaths` の結果として一時追加した subgraph
+- `selectedNodeId`: 現在詳細表示しているノード
+- `pathSearchDraft`: 経路検索の `source_node_id` / `target_node_id`
+- `exploreOptions`: `maxDepth`, `edgeTypeFilters`, `crossDocument`
+
+### state 更新ルール
+
+- `GetGraph` 実行時は `baseGraph` を置き換え、`expandedGraph` / `pathSearchGraph` をクリアする
+- `ExpandNeighbors` 実行時は `expandedGraph` にマージする
+- `FindPaths` 実行時は `pathSearchGraph` を置き換える
+- 同一ノード ID の重複はフロント側で統合し、最初に読み込んだ node オブジェクトを基準に不足属性だけ補完する
+- `scope=document` と `scope=canonical` は別ノードとして保持し、`canonical_node_id` を使って関連表示だけを行う
+- `edge.scope=document` と `edge.scope=canonical` も別系列として保持し、path overlay では `scope=canonical` を優先する
+- `collapse` 実行時は対象操作で追加した subgraph のみを取り除く
+
+### 表示上のレイヤー
+
+- `baseGraph`: 通常表示
+- `expandedGraph`: 追加表示。薄いハイライト背景または発光 border を付ける
+- `pathSearchGraph`: 最上位表示。path 上のノードと edge を強調し、非該当要素は減衰表示する
 
 ---
 
@@ -211,6 +289,10 @@ Canvas 右上の 🔍 アイコンで展開するサイドパネル。
 - `node_type_filter`: category で絞り込む
 - `source_filename_filter`: zip 内ファイルで絞り込む
 - テキスト検索: label / description の部分一致
+- `edge_type_filter`: 近傍展開・経路検索に含める edge_type を選ぶ
+- `depth_filter`: 近傍展開の hop 数を選ぶ
+- `cross_document_toggle`: document 横断ノードを表示するか切り替える
+- `document_scope_filter`: 探索対象 document を現在文書のみ / 選択文書群 / workspace 全体 から選ぶ
 
 ---
 
@@ -222,6 +304,26 @@ Canvas 右上の 🔍 アイコンで展開するサイドパネル。
 - React Flow の CSS transition（`transition: transform 300ms ease-in-out`）で補間する
 - 切り替え中は操作を無効化し、完了後に有効化する
 - ノード数が多い（100件以上）場合はアニメーションをスキップしてパフォーマンスを優先する
+- 近傍展開時は追加ノードのみフェードインし、既存ノードの大きな再配置は避ける
+
+---
+
+## 経路検索モード
+
+```
+┌─────────────────────────────────────────────┐
+│ 経路検索: [起点: 販売戦略] [終点: CV率3.2%]  │
+│ [max depth: 4▼] [edge type: すべて▼] [検索]  │
+├─────────────────────────────────────────────┤
+│ Path 1  販売戦略 → SNS施策 → CV率3.2%  (2 hop) │
+│ Path 2  販売戦略 → テレアポ → A社事例 ...      │
+└─────────────────────────────────────────────┘
+```
+
+- 経路検索モード中は canvas 上でノードを 2 つまで選択できる
+- `max depth` は 2〜6 の範囲で選択可能にする
+- path 候補をクリックすると対応サブグラフを中央にフィット表示する
+- 検索時は `cross_document_toggle` と `document_scope_filter` の両方を request に反映する
 
 ---
 
@@ -406,10 +508,19 @@ Canvas 右上の 🔍 アイコンで展開するサイドパネル。
 
 | RPC | 用途 |
 | --- | --- |
+| `ExpandNeighbors` | 選択ノードから指定 hop の近傍 subgraph を取得 |
+| `FindPaths` | 2 ノード間の多段経路を取得 |
 | `GetPipelineStats` | ステージ別処理時間・成功率・Gemini コスト集計 |
 | `GetExtractionStats` | ノード level/category 分布・Pass 統合数 |
 | `GetEvaluationTrend` | 週次 Precision/Recall・level一致率 |
 | `ListFailedDocuments` | 失敗ドキュメント一覧とエラー詳細 |
+
+### フロント実装メモ
+
+- 初期ロードでは `GetGraph` のみを呼び、node ごとの追加 fetch は行わない
+- ノード詳細パネルを開いた時のみ `GetNode` を呼ぶ
+- 近傍展開は `ExpandNeighbors`、経路検索は `FindPaths` を明示的なユーザー操作でのみ呼ぶ
+- 探索中も `GetGraph` を再実行しない限り base graph は保持する
 
 ---
 

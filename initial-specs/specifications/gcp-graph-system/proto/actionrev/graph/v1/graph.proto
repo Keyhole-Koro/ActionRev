@@ -8,6 +8,8 @@ import "actionrev/graph/v1/common.proto";
 
 service GraphService {
   rpc GetGraph(GetGraphRequest) returns (GetGraphResponse);
+  rpc ExpandNeighbors(ExpandNeighborsRequest) returns (ExpandNeighborsResponse);
+  rpc FindPaths(FindPathsRequest) returns (FindPathsResponse);
   rpc GetPipelineStats(GetPipelineStatsRequest) returns (GetPipelineStatsResponse);
   rpc GetExtractionStats(GetExtractionStatsRequest) returns (GetExtractionStatsResponse);
   rpc GetEvaluationTrend(GetEvaluationTrendRequest) returns (GetEvaluationTrendResponse);
@@ -15,13 +17,53 @@ service GraphService {
 }
 
 message GetGraphRequest {
-  string document_id = 1;
-  repeated NodeCategory category_filters = 2;
-  repeated int32 level_filters = 3;
-  int32 limit = 4;
-  string source_filename_filter = 5;
+  string workspace_id = 1;
+  string document_id = 2;
+  repeated NodeCategory category_filters = 3;
+  repeated int32 level_filters = 4;
+  int32 limit = 5;
+  string source_filename_filter = 6;
+  bool resolve_aliases = 7;
+  repeated EdgeType edge_type_filters = 8;
+}
+
+message ExpandNeighborsRequest {
+  string workspace_id = 1;
+  string seed_node_id = 2;
+  int32 max_depth = 3;
+  repeated EdgeType edge_type_filters = 4;
+  int32 limit_per_hop = 5;
   bool resolve_aliases = 6;
-  repeated EdgeType edge_type_filters = 7;
+  bool cross_document = 7;
+  repeated string document_ids = 8;
+}
+
+message ExpandNeighborsResponse {
+  Graph graph = 1;
+  string seed_node_id = 2;
+  int32 depth = 3;
+}
+
+message FindPathsRequest {
+  string workspace_id = 1;
+  string source_node_id = 2;
+  string target_node_id = 3;
+  int32 max_depth = 4;
+  repeated EdgeType edge_type_filters = 5;
+  int32 limit = 6;
+  bool cross_document = 7;
+  repeated string document_ids = 8;
+}
+
+message GraphPath {
+  repeated string node_ids = 1;
+  repeated string edge_ids = 2;
+  int32 hop_count = 3;
+}
+
+message FindPathsResponse {
+  Graph graph = 1;
+  repeated GraphPath paths = 2;
 }
 
 message GetGraphResponse {

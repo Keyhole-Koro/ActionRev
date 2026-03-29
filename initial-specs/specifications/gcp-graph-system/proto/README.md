@@ -25,6 +25,7 @@
 - 長時間処理は unary RPC で閉じず、job 起動と status 参照に分割する
 - 初期段階ではシンプルさを優先し、将来の field 追加を見込んで optional 拡張しやすい構造にする
 - breaking change は `actionrev.graph.v2` を新設して吸収する
+- `graph.proto` には document 表示用の `GetGraph` と探索用の `ExpandNeighbors` / `FindPaths` を同居させる
 
 ## Notes
 

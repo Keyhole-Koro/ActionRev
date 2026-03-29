@@ -76,10 +76,12 @@ document の解析を開始する。
 
 #### GetGraph
 
-可視化用のノード・エッジを取得する。
+可視化用のノード・エッジを取得する。document 単位の全体表示や初期ロードは `BigQuery` を正本として返す。
 
 #### Request Parameters
 
+- `document_id`
+- `workspace_id`
 - `category_filters`
 - `level_filters`
 - `edge_type_filters`
@@ -94,7 +96,9 @@ document の解析を開始する。
   "document_id": "doc_001",
   "nodes": [
     {
-      "id": "n1",
+      "id": "nd_01JQ8Y7M6Y7YJ8V0X3D4K9P2AB",
+      "canonical_node_id": "cn_01JQ8YCH9R2V6M4B8T1K5N7PQS",
+      "scope": "document",
       "label": "販売戦略",
       "level": 1,
       "category": "concept",
@@ -103,14 +107,101 @@ document の解析を開始する。
   ],
   "edges": [
     {
-      "id": "e1",
-      "source": "n1",
-      "target": "n2",
-      "type": "hierarchical"
+      "id": "ed_01JQ8YAZE4X7S9N5K2M1P6R8TC",
+      "source": "nd_01JQ8Y7M6Y7YJ8V0X3D4K9P2AB",
+      "target": "nd_01JQ8Y8T0H4F6B3W9C1N7M2KQD",
+      "type": "hierarchical",
+      "scope": "document"
     }
   ]
 }
 ```
+
+#### ExpandNeighbors
+
+対話的な近傍探索を行う。canonical node を起点に `Spanner Graph` から指定 hop 数の近傍 subgraph を返す。
+
+#### Request Parameters
+
+- `seed_node_id`
+- `workspace_id`
+- `max_depth`
+- `edge_type_filters`
+- `limit_per_hop`
+- `resolve_aliases`
+- `cross_document`
+- `document_ids` : 探索対象を特定 document 群に絞る場合のみ指定
+
+#### Response Example
+
+```json
+{
+  "graph": {
+    "nodes": [
+      {"id": "cn_01JQ8YCH9R2V6M4B8T1K5N7PQS", "canonical_node_id": "cn_01JQ8YCH9R2V6M4B8T1K5N7PQS", "scope": "canonical", "label": "販売戦略"},
+      {"id": "cn_01JQ8YD3M5X8F2C7R4T9V1K6LA", "canonical_node_id": "cn_01JQ8YD3M5X8F2C7R4T9V1K6LA", "scope": "canonical", "label": "テレアポ施策"}
+    ],
+    "edges": [
+      {"id": "ed_01JQ8YF1Z6C4N8M2R5T7V9K3LP", "source": "cn_01JQ8YCH9R2V6M4B8T1K5N7PQS", "target": "cn_01JQ8YD3M5X8F2C7R4T9V1K6LA", "type": "hierarchical", "scope": "canonical"}
+    ]
+  },
+  "seed_node_id": "cn_01JQ8YCH9R2V6M4B8T1K5N7PQS",
+  "depth": 1
+}
+```
+
+#### FindPaths
+
+2 ノード間の多段経路を検索する。`Spanner Graph` を使い、複数経路候補を返す。
+
+#### Request Parameters
+
+- `source_node_id`
+- `target_node_id`
+- `workspace_id`
+- `max_depth`
+- `edge_type_filters`
+- `limit`
+- `cross_document`
+- `document_ids`
+
+#### Response Example
+
+```json
+{
+  "graph": {
+    "nodes": [
+      {"id": "cn_01JQ8YCH9R2V6M4B8T1K5N7PQS", "canonical_node_id": "cn_01JQ8YCH9R2V6M4B8T1K5N7PQS", "scope": "canonical", "label": "販売戦略"},
+      {"id": "cn_01JQ8YG6B1N4T8M3R7V2K5P9DX", "canonical_node_id": "cn_01JQ8YG6B1N4T8M3R7V2K5P9DX", "scope": "canonical", "label": "SNS施策"},
+      {"id": "cn_01JQ8YJ2F4C6M9T1R3V8K5N7QW", "canonical_node_id": "cn_01JQ8YJ2F4C6M9T1R3V8K5N7QW", "scope": "canonical", "label": "CV率3.2%"}
+    ],
+    "edges": [
+      {"id": "ed_01JQ8YK8M3T6V1R4C7N9P2L5HS", "source": "cn_01JQ8YCH9R2V6M4B8T1K5N7PQS", "target": "cn_01JQ8YG6B1N4T8M3R7V2K5P9DX", "type": "hierarchical", "scope": "canonical"},
+      {"id": "ed_01JQ8YM4R7C1N5T8V2K6P9L3BZ", "source": "cn_01JQ8YG6B1N4T8M3R7V2K5P9DX", "target": "cn_01JQ8YJ2F4C6M9T1R3V8K5N7QW", "type": "measured_by", "scope": "canonical"}
+    ]
+  },
+  "paths": [
+    {
+      "node_ids": ["cn_01JQ8YCH9R2V6M4B8T1K5N7PQS", "cn_01JQ8YG6B1N4T8M3R7V2K5P9DX", "cn_01JQ8YJ2F4C6M9T1R3V8K5N7QW"],
+      "edge_ids": ["ed_01JQ8YK8M3T6V1R4C7N9P2L5HS", "ed_01JQ8YM4R7C1N5T8V2K6P9L3BZ"],
+      "hop_count": 2
+    }
+  ]
+}
+```
+
+#### Notes
+
+- `GetGraph` は document 表示用の集約取得を優先する
+- `ExpandNeighbors` / `FindPaths` は探索 UX 用であり、低レイテンシを優先して `Spanner Graph` を参照する
+- `BigQuery` と `Spanner Graph` に同期遅延がある場合、探索結果は最新の抽出完了直後とわずかにずれる可能性がある
+- 探索系 RPC は必ず `workspace_id` を受け取り、workspace 境界をまたがる探索は許可しない
+- `cross_document=false` の場合は現在の document または `document_ids` の範囲だけを探索対象とする
+- `cross_document=true` の場合は同一 workspace 内の canonical graph を探索対象とする
+- `Node.scope=document` の場合 `id` は `nd_*` を返し、`canonical_node_id` は alias 解決済みなら補助属性として返す
+- `Node.scope=canonical` の場合 `id` と `canonical_node_id` は同一の `cn_*` を返し、`document_id` は必須ではない
+- `Edge.scope=document` の場合 `source` / `target` は document node (`nd_*`) を指す
+- `Edge.scope=canonical` の場合 `source` / `target` は canonical node (`cn_*`) を指す
 
 ### NodeService
 
@@ -173,6 +264,7 @@ document の解析を開始する。
 - `.proto` ファイルは service 単位で分割し、1ファイル1service を原則とする
 - service は `UserService`, `WorkspaceService`, `DocumentService`, `GraphService`, `NodeService`, `JobService`, `ToolService` に分割する
 - `GraphService` はグラフ取得と開発者向け統計 RPC を持つ
+- `GraphService` は `GetGraph` のほか、`ExpandNeighbors` と `FindPaths` の探索 RPC を持つ
 - request と response は用途単位で明示的に分ける
 - `Node`, `Edge`, `Document`, `Job`, `NormalizationTool`, `NormalizationToolRun` などの共通 message / enum は `common.proto` に集約する
 - 複数 service から参照される message は service 個別 proto に重複定義しない
@@ -201,6 +293,7 @@ document の解析を開始する。
 - ブラウザからは `Connect` プロトコルを優先利用する
 - 将来的な他クライアント連携に備え、`gRPC` および `gRPC-Web` 互換を維持できる構成を優先する
 - 長時間処理は unary RPC で完結させず、job 起動と status 参照に分ける
+- 探索系 RPC は 1 画面あたり少数回の集約呼び出しを前提とし、N+1 的な node 単位 fetch を避ける
 
 ## Prompt and Extraction Policy
 

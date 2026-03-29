@@ -124,6 +124,21 @@ gold/
 - 1 件の操作だけでは gold を更新せず、同種の修正が 3 回以上観測されたものを優先的に反映する
 - フィードバックが蓄積されるほど評価データが充実する
 
+### `feedback_events` の保存方針
+
+- 生の `feedback_events` の正本は BigQuery に保存する
+- repo にはレビュー済みで採用対象になった要約済みイベント、またはそこから生成した正式 eval データのみを保存する
+- `feedback_events/*.ndjson` はエクスポート用の補助形式であり、システムの正本ではない
+- BigQuery 側では 90 日の詳細保持、月次ロールアップは 1 年保持を基本とする
+
+### gold 更新レビュー方針
+
+- gold データの更新は GitHub PR ベースで行う
+- `eval/` 配下の変更は `dev` ロール 2 名のレビューを必須とする
+- 差分レビューでは `expected_nodes.json`, `expected_edges.json`, `notes.md` を同時に確認する
+- 専用管理画面は初期スコープ外とし、レビュー UI は GitHub の diff を利用する
+- 採用された修正だけを repo にマージし、生イベントは BigQuery に残して監査可能にする
+
 ### LLM-as-judge（HTML サマリ等）
 
 人手評価が困難な出力（サマリ品質）は Gemini に評価させる。
@@ -193,5 +208,4 @@ eval/
 
 ## Open Issues
 
-- gold 更新レビューを GitHub PR ベースにするか、専用管理画面を用意するか
-- `feedback_events` の保存先を BigQuery と repo のどちらに寄せるか
+- `feedback_events` の月次ロールアップ粒度を document 単位と problem type 単位のどちらに寄せるか
