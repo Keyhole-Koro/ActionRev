@@ -66,19 +66,6 @@ jobs:
             -var="backend_image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/backend:${{ inputs.image_tag }}" \
             -var="sandbox_image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/sandbox:${{ inputs.image_tag }}"
 
-      # --- BigQuery migrations ---
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: backend/go.mod
-          cache-dependency-path: backend/go.sum
-
-      - name: Run BigQuery migrations
-        run: |
-          go run ./backend/cmd/migrate \
-            -project="${{ secrets.GCP_PROJECT_ID_STAGE }}" \
-            -dataset=graph \
-            -dir=migrations/bigquery
-
       # --- Cloud Run: アプリデプロイ ---
       - name: Deploy backend to Cloud Run
         run: |

@@ -103,19 +103,6 @@ jobs:
         working-directory: infra/terraform
         run: terraform apply -auto-approve tfplan
 
-      # --- BigQuery migrations ---
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: backend/go.mod
-          cache-dependency-path: backend/go.sum
-
-      - name: Run BigQuery migrations
-        run: |
-          go run ./backend/cmd/migrate \
-            -project="${{ secrets.GCP_PROJECT_ID_PROD }}" \
-            -dataset=graph \
-            -dir=migrations/bigquery
-
       # --- Cloud Run: アプリデプロイ ---
       - name: Deploy backend to Cloud Run (prod)
         run: |
