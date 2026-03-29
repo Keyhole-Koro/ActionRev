@@ -31,8 +31,8 @@
 | 抽出 → BigQuery 書き込み | node / edge / chunk が正しいスキーマで保存されるか |
 | BigQuery → Spanner Graph 同期 | canonical node / edge が探索用 graph に正しく反映されるか |
 | GetGraph RPC | source_filename_filter / node_category_filter が正しく動くか |
-| ExpandNeighbors / FindPaths RPC | 近傍展開と経路検索が期待する subgraph を返すか |
-| GetNode RPC | 隣接エッジ・出典チャンク・summary_html が返るか |
+| ExpandNeighbors / FindPaths RPC | 近傍展開と経路検索が期待する subgraph と path evidence ref を返すか |
+| GetGraphEntityDetail RPC | 参照対象に応じた詳細・隣接エッジ・出典チャンク・supporting edge が返るか |
 | ToolService | 正規化ツールの dry-run / 本実行・差分保存の一連フロー |
 
 ### E2E テスト

@@ -184,7 +184,9 @@ document の解析を開始する。
     {
       "node_ids": ["cn_01JQ8YCH9R2V6M4B8T1K5N7PQS", "cn_01JQ8YG6B1N4T8M3R7V2K5P9DX", "cn_01JQ8YJ2F4C6M9T1R3V8K5N7QW"],
       "edge_ids": ["ed_01JQ8YK8M3T6V1R4C7N9P2L5HS", "ed_01JQ8YM4R7C1N5T8V2K6P9L3BZ"],
-      "hop_count": 2
+      "hop_count": 2,
+      "supporting_edge_ids": ["ed_01JQ8YN9T4V2R6C1M8K5P3L7QA"],
+      "source_document_ids": ["doc_001", "doc_014"]
     }
   ]
 }
@@ -198,6 +200,8 @@ document の解析を開始する。
 - 探索系 RPC は必ず `workspace_id` を受け取り、workspace 境界をまたがる探索は許可しない
 - `cross_document=false` の場合は現在の document または `document_ids` の範囲だけを探索対象とする
 - `cross_document=true` の場合は同一 workspace 内の canonical graph を探索対象とする
+- `GraphPath.supporting_edge_ids` は path の根拠として使える document edge への軽量参照のみを返し、chunk 本文は含めない
+- `GraphPath.source_document_ids` は path 根拠が見つかった document 群を返す
 - `Node.scope=document` の場合 `id` は `nd_*` を返し、`canonical_node_id` は alias 解決済みなら補助属性として返す
 - `Node.scope=canonical` の場合 `id` と `canonical_node_id` は同一の `cn_*` を返し、`document_id` は必須ではない
 - `Edge.scope=document` の場合 `source` / `target` は document node (`nd_*`) を指す
@@ -205,15 +209,35 @@ document の解析を開始する。
 
 ### NodeService
 
-#### GetNode
+#### GetGraphEntityDetail
 
-ノード詳細、関連エッジ、出典 chunk を取得する。
+詳細パネル表示用に、参照対象の詳細・関連エッジ・根拠情報を取得する。document node / canonical node の違いは `target_ref` で表現し、バックエンド実装の切り替えを API 契約から分離する。
 
 #### Request Parameters
 
-- `document_id`
-- `node_id`
+- `target_ref.workspace_id`
+- `target_ref.scope` : `document` / `canonical`
+- `target_ref.id` : `nd_*` または `cn_*`
+- `target_ref.document_id` : `scope=document` のときのみ必須
 - `resolve_aliases` : alias ノード指定時に canonical ノードへ寄せて返すか
+
+#### Response Shape
+
+- `detail.ref` : 要求した参照対象
+- `detail.node` : 表示主体の node
+- `detail.related_edges` : 詳細パネルで使う関連 edge
+- `detail.evidence.source_chunks` : 表示根拠 chunk
+- `detail.evidence.source_document_ids` : 根拠 document 一覧
+- `detail.evidence.supporting_edges` : path や canonical 関係の根拠として提示する document edge 群
+- `detail.representative_nodes` : `scope=canonical` の場合のみ返す代表 document node 群
+
+#### Notes
+
+- `target_ref.scope=document` の場合は `BigQuery` 側の document node を正本として詳細を組み立てる
+- `target_ref.scope=canonical` の場合は `Spanner Graph` の canonical node を起点にしつつ、`node_aliases` と代表 document node から evidence を補完する
+- `detail.evidence.supporting_edges` は canonical relation や path 表示から document 根拠へドリルダウンするための補助情報として使う
+- `detail.representative_nodes` は `scope=document` では空配列を返す
+- フロントは `detail.ref.scope` を見て UI を切り替えるが、呼び出し先 RPC は常に `GetGraphEntityDetail` のみとする
 
 ### JobService
 

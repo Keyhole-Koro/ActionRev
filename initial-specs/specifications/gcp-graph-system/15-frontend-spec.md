@@ -189,6 +189,8 @@ Canvas 右上のボタンでビューを切り替える。
 - 展開済み subgraph は document の初期 graph と区別できるよう外枠または薄い背景で表示する
 - `scope=canonical` のノード詳細では `canonical_node_id` と代表ラベルを表示し、document ノード詳細では `document_id` と出典 chunk を優先表示する
 - `scope=canonical` の edge を含む path は優先ハイライトし、document edge は補助的に薄く残す
+- 詳細パネルの取得 API は `GetGraphEntityDetail` に統一し、`target_ref.scope` と `target_ref.id` を切り替えて document / canonical の両方を扱う
+- canonical 詳細では `representative_nodes` と `evidence.supporting_edges` を表示し、path の各関係から document 根拠へ降りられるようにする
 
 ---
 
@@ -208,6 +210,7 @@ Canvas 右上のボタンでビューを切り替える。
 - `経路検索` 実行後、候補 path をサイドパネルまたは上部トレイに一覧表示する
 - path を選ぶと対応ノード・エッジのみ強調表示し、他は半透明にする
 - 表示内容には hop 数、edge type の列、document 横断かどうかを含める
+- path 一覧には `source_document_ids` を併記し、`supporting_edge_ids` がある path は「根拠あり」として表示する
 
 ### document 横断探索
 
@@ -323,6 +326,7 @@ Canvas 右上の 🔍 アイコンで展開するサイドパネル。
 - 経路検索モード中は canvas 上でノードを 2 つまで選択できる
 - `max depth` は 2〜6 の範囲で選択可能にする
 - path 候補をクリックすると対応サブグラフを中央にフィット表示する
+- `supporting_edge_ids` がある場合は「根拠を見る」導線を表示し、必要時に `GetGraphEntityDetail` で詳細を引く
 - 検索時は `cross_document_toggle` と `document_scope_filter` の両方を request に反映する
 
 ---
@@ -518,7 +522,7 @@ Canvas 右上の 🔍 アイコンで展開するサイドパネル。
 ### フロント実装メモ
 
 - 初期ロードでは `GetGraph` のみを呼び、node ごとの追加 fetch は行わない
-- ノード詳細パネルを開いた時のみ `GetNode` を呼ぶ
+- ノード詳細パネルを開いた時のみ `GetGraphEntityDetail` を呼ぶ
 - 近傍展開は `ExpandNeighbors`、経路検索は `FindPaths` を明示的なユーザー操作でのみ呼ぶ
 - 探索中も `GetGraph` を再実行しない限り base graph は保持する
 

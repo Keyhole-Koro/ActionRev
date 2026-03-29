@@ -35,6 +35,7 @@ backend/
 │   │   │                      # 責務: 入力バリデーション・proto↔domain 変換・service 呼び出し
 │   │   ├── document.go
 │   │   ├── graph.go
+│   │   ├── entity.go          # GetGraphEntityDetail
 │   │   ├── workspace.go
 │   │   ├── user.go
 │   │   ├── billing.go
@@ -43,6 +44,7 @@ backend/
 │   ├── service/               # ビジネスロジック層
 │   │   ├── document.go        # ドキュメント登録・ステータス管理
 │   │   ├── graph.go           # GetGraph・ExpandNeighbors・FindPaths
+│   │   ├── entity.go          # GetGraphEntityDetail
 │   │   ├── workspace.go       # ワークスペース CRUD・メンバー管理
 │   │   ├── user.go            # SyncUser・GetMe
 │   │   ├── billing.go         # Stripe Checkout / Portal / Webhook 処理
@@ -166,6 +168,11 @@ type GraphQueryRepository interface {
     ExpandNeighbors(ctx context.Context, seedNodeID string, depth int, edgeTypes []domain.EdgeType, limitPerHop int) (domain.Graph, error)
     FindPaths(ctx context.Context, sourceNodeID string, targetNodeID string, maxDepth int, edgeTypes []domain.EdgeType, limit int) (domain.Graph, []domain.GraphPath, error)
     SyncCanonicalGraph(ctx context.Context, nodes []domain.Node, edges []domain.Edge) error
+}
+
+type GraphEntityDetailRepository interface {
+    GetDocumentNodeDetail(ctx context.Context, workspaceID string, documentID string, nodeID string, resolveAliases bool) (domain.GraphEntityDetail, error)
+    GetCanonicalNodeDetail(ctx context.Context, workspaceID string, canonicalNodeID string, resolveAliases bool) (domain.GraphEntityDetail, error)
 }
 ```
 
