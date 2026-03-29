@@ -180,6 +180,7 @@ document の解析を開始する。
 ### Prompt Requirements
 
 - ノードの `level` と `category` を明示的に割り当てさせる
+- `level` は常に 0〜3 の固定4段階で割り当て、文書ごとに段数を変えさせない
 - エッジ種別を限定する
 - 出典 chunk の参照を必須にする
 - JSON Schema に厳密に従うよう要求する
@@ -188,5 +189,7 @@ document の解析を開始する。
 
 - ラベルの正規化
 - 重複ノードの統合
-- 不正 JSON の補正または再試行
+- 不正 JSON に対する JSON repair を 1 回だけ試行する
+- JSON repair 後も不正な場合は Gemini 再試行を最大 2 回まで行う
 - 不十分な出力時の fail handling
+- chunk 抽出の確定失敗は document 全体の失敗として扱う
