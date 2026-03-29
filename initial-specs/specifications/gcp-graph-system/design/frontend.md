@@ -4,6 +4,28 @@
 
 フロントエンドは `TypeScript + React + React Flow` で実装し、`Firebase Hosting` から配信する。グラフの可視化と対話的探索を中心に、ファイルアップロード・処理ステータス確認・ノード詳細閲覧・近傍展開・多段経路検索のユースケースを担う。開発者向けに `/dev/stats` ルートで統計ビューワーを提供し、`Firebase Auth` のカスタムクレーム `role: "dev"` を持つユーザーのみ表示する。
 
+## UI State Naming Policy
+
+フロントの状態名は [data-model.md](../domain/data-model.md) の state family を踏まえつつ、UI 固有の family を追加して扱う。
+
+### Frontend State Families
+
+| Family | 用途 | 主な値 |
+| --- | --- | --- |
+| `DocumentLifecycleState` | document 一覧・再処理ボタンの表示制御 | `uploaded` / `pending_normalization` / `processing` / `completed` / `failed` |
+| `GraphProjectionScope` | node / edge が document graph か canonical graph かの区別 | `document` / `canonical` |
+| `GraphViewMode` | canvas のレイアウト表示モード | `level_bands` / `force` / `claim_focus` |
+| `ExplorePanelState` | 詳細パネルの表示状態 | `closed` / `document_detail` / `canonical_detail` |
+| `PathSearchMode` | 経路検索 UI の操作状態 | `inactive` / `picking_source` / `picking_target` / `results` |
+| `ExploreDepthPreset` | 近傍展開の深さプリセット | `one_hop` / `two_hop` / `three_hop` |
+
+### Naming Rules
+
+- backend 由来の `status` は family 名付きで扱い、`documentStatus` のように用途を明示する
+- `scope` は `GraphProjectionScope` に限定し、単なる UI タブ切り替えには使わない
+- `mode` は `GraphViewMode` や `PathSearchMode` のように具体 family 名で分ける
+- React state 名は family を反映し、`viewMode`, `pathSearchMode`, `explorePanelState` のように曖昧な `state` 単体名を避ける
+
 ---
 
 ## ルート構成
@@ -99,6 +121,7 @@ Canvas 右上のボタンでビューを切り替える。
 
 - `1-hop` / `2-hop` / `3-hop` は選択中ノードに対する近傍展開の深さ
 - `経路検索` は 2 ノード選択モードへ切り替える
+- この切り替えは `GraphViewMode` と `PathSearchMode` の変更として扱う
 
 ---
 
@@ -233,6 +256,10 @@ Canvas 右上のボタンでビューを切り替える。
 - `selectedNodeId`: 現在詳細表示しているノード
 - `pathSearchDraft`: 経路検索の `source_node_id` / `target_node_id`
 - `exploreOptions`: `maxDepth`, `edgeTypeFilters`, `crossDocument`
+- `viewMode`: `GraphViewMode`
+- `explorePanelState`: `ExplorePanelState`
+- `pathSearchMode`: `PathSearchMode`
+- `exploreDepthPreset`: `ExploreDepthPreset`
 
 ### state 更新ルール
 
@@ -243,6 +270,8 @@ Canvas 右上のボタンでビューを切り替える。
 - `scope=document` と `scope=canonical` は別ノードとして保持し、`canonical_node_id` を使って関連表示だけを行う
 - `edge.scope=document` と `edge.scope=canonical` も別系列として保持し、path overlay では `scope=canonical` を優先する
 - `collapse` 実行時は対象操作で追加した subgraph のみを取り除く
+- ノード選択時は `explorePanelState` を `document_detail` または `canonical_detail` に遷移させる
+- `経路検索` 押下時は `pathSearchMode` を `picking_source` にし、起点選択後に `picking_target`、結果取得後に `results` に遷移させる
 
 ### 表示上のレイヤー
 
@@ -274,9 +303,12 @@ Canvas 右上のボタンでビューを切り替える。
 
 ドキュメント一覧に処理状態をバッジで表示する。
 
+- この表示は `DocumentLifecycleState` に直接対応する
+
 | status | 表示 |
 | --- | --- |
 | `uploaded` | ⬆ アップロード済 |
+| `pending_normalization` | 🛠 承認待ち |
 | `processing` | ⏳ 処理中（スピナー） |
 | `completed` | ✅ 完了 |
 | `failed` | ❌ 失敗（再処理ボタンを表示） |
