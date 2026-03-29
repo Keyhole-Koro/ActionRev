@@ -44,7 +44,8 @@ jobs:
           version: latest
 
   # ---------------------------------------------------------------------------
-  # Proto: lint + breaking change check
+  # Proto: lint
+  # breaking change check は API が安定したら追加する
   # ---------------------------------------------------------------------------
   proto:
     name: Proto lint
@@ -57,8 +58,6 @@ jobs:
         with:
           input: docs/specifications/gcp-graph-system/proto
           lint: true
-          breaking: true
-          breaking_against: "https://github.com/${{ github.repository }}.git#branch=main,subdir=docs/specifications/gcp-graph-system/proto"
 
   # ---------------------------------------------------------------------------
   # Terraform: format check
