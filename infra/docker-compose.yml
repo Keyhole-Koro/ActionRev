@@ -1,43 +1,9 @@
 version: "3.9"
 
-# ローカル開発環境
-# Vertex AI (Gemini) はエミュレータが存在しないため、実際の GCP プロジェクトを使用する
-# Gemini キャッシュ (GEMINI_CACHE_ENABLED=true) で API コストを節約できる
-# Stripe は本家テストモードキー (sk_test_...) をそのまま使用する
+# ローカル開発環境 (エミュレータ群)
+# バックエンドは実装開始時に追加する
 
 services:
-  # ---------------------------------------------------------------------------
-  # Go バックエンド (Connect RPC)
-  # Air によるホットリロード前提。backend/ に Dockerfile.dev と .air.toml を配置すること
-  # ---------------------------------------------------------------------------
-  backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile.dev
-    ports:
-      - "8080:8080"
-    env_file:
-      - .env.local
-    environment:
-      BIGQUERY_EMULATOR_HOST: "bigquery-emulator:9050"
-      STORAGE_EMULATOR_HOST: "http://fake-gcs:4443"
-      FIREBASE_AUTH_EMULATOR_HOST: "firebase-emulator:9099"
-      FIREBASE_AUTH_EMULATOR: "true"
-    depends_on:
-      bigquery-emulator:
-        condition: service_healthy
-      fake-gcs:
-        condition: service_started
-      firebase-emulator:
-        condition: service_started
-    volumes:
-      - ../backend:/app
-      - go-mod-cache:/root/go/pkg/mod
-      # Gemini レスポンスキャッシュ: リポジトリルートの .gemini-cache/ をマウント
-      - ../.gemini-cache:/app/.gemini-cache
-    networks:
-      - actionrev
-
   # ---------------------------------------------------------------------------
   # Cloud Storage エミュレータ
   # GCS 署名付き URL の発行も対応 (fake-gcs-server >= 1.45)
@@ -92,7 +58,7 @@ services:
     command: >
       firebase emulators:start --only auth --project actionrev-local
     environment:
-      FIREBASE_TOKEN: "local"   # CI 用 token (ローカルは不要だが型合わせ)
+      FIREBASE_TOKEN: "local"
     volumes:
       - ../firebase.json:/home/node/firebase.json:ro
       - firebase-emulator-data:/home/node/.cache/firebase
@@ -103,7 +69,6 @@ services:
 volumes:
   fake-gcs-data:
   firebase-emulator-data:
-  go-mod-cache:
 
 networks:
   actionrev:
