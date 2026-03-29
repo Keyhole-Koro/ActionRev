@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package synthify.graph.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/synthify/backend/gen/synthify/graph/v1;graphv1";
+
+enum JobType {
+  JOB_TYPE_UNSPECIFIED = 0;
+  JOB_TYPE_DOCUMENT_PROCESSING = 1;
+  JOB_TYPE_NORMALIZATION_TOOL_RUN = 2;
+  JOB_TYPE_GRAPH_SYNC = 3;
+}
+
+enum JobLifecycleState {
+  JOB_LIFECYCLE_STATE_UNSPECIFIED = 0;
+  JOB_LIFECYCLE_STATE_QUEUED = 1;
+  JOB_LIFECYCLE_STATE_RUNNING = 2;
+  JOB_LIFECYCLE_STATE_COMPLETED = 3;
+  JOB_LIFECYCLE_STATE_FAILED = 4;
+  JOB_LIFECYCLE_STATE_CANCELLED = 5;
+}
+
+enum PipelineStageState {
+  PIPELINE_STAGE_STATE_UNSPECIFIED = 0;
+  PIPELINE_STAGE_STATE_PENDING = 1;
+  PIPELINE_STAGE_STATE_RUNNING = 2;
+  PIPELINE_STAGE_STATE_COMPLETED = 3;
+  PIPELINE_STAGE_STATE_FAILED = 4;
+  PIPELINE_STAGE_STATE_SKIPPED = 5;
+}
+
+message JobStageStatus {
+  string stage_name = 1;
+  PipelineStageState state = 2;
+  string error_message = 3;
+  google.protobuf.Timestamp updated_at = 4;
+}
+
+message Job {
+  string job_id = 1;
+  string workspace_id = 2;
+  string document_id = 3;
+  JobType type = 4;
+  JobLifecycleState status = 5;
+  repeated JobStageStatus stages = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message GetJobStatusRequest {
+  string workspace_id = 1;
+  string job_id = 2;
+}
+
+message GetJobStatusResponse {
+  Job job = 1;
+}
+
+service JobService {
+  rpc GetJobStatus(GetJobStatusRequest) returns (GetJobStatusResponse);
+}

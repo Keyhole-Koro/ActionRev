@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package synthify.graph.v1;
+
+option go_package = "github.com/synthify/backend/gen/synthify/graph/v1;graphv1";
+
+enum GraphProjectionScope {
+  GRAPH_PROJECTION_SCOPE_UNSPECIFIED = 0;
+  GRAPH_PROJECTION_SCOPE_DOCUMENT = 1;
+  GRAPH_PROJECTION_SCOPE_CANONICAL = 2;
+}
+
+enum NodeCategory {
+  NODE_CATEGORY_UNSPECIFIED = 0;
+  NODE_CATEGORY_CONCEPT = 1;
+  NODE_CATEGORY_CLAIM = 2;
+  NODE_CATEGORY_EVIDENCE = 3;
+  NODE_CATEGORY_ENTITY = 4;
+  NODE_CATEGORY_METRIC = 5;
+  NODE_CATEGORY_ACTION = 6;
+}
+
+enum EntityType {
+  ENTITY_TYPE_UNSPECIFIED = 0;
+  ENTITY_TYPE_PERSON = 1;
+  ENTITY_TYPE_ORGANIZATION = 2;
+  ENTITY_TYPE_PRODUCT = 3;
+  ENTITY_TYPE_LOCATION = 4;
+  ENTITY_TYPE_EVENT = 5;
+  ENTITY_TYPE_OTHER = 6;
+}
+
+enum EdgeType {
+  EDGE_TYPE_UNSPECIFIED = 0;
+  EDGE_TYPE_HIERARCHICAL = 1;
+  EDGE_TYPE_RELATED_TO = 2;
+  EDGE_TYPE_SUPPORTS = 3;
+  EDGE_TYPE_CONTRADICTS = 4;
+  EDGE_TYPE_CAUSES = 5;
+  EDGE_TYPE_MEASURED_BY = 6;
+  EDGE_TYPE_MENTIONS = 7;
+}
+
+message Node {
+  string id = 1;
+  string document_id = 2;
+  string canonical_node_id = 3;
+  GraphProjectionScope scope = 4;
+  string label = 5;
+  uint32 level = 6;
+  NodeCategory category = 7;
+  string description = 8;
+  EntityType entity_type = 9;
+  string summary_html = 10;
+  repeated string source_chunk_ids = 11;
+}
+
+message Edge {
+  string id = 1;
+  string document_id = 2;
+  GraphProjectionScope scope = 3;
+  string source = 4;
+  string target = 5;
+  EdgeType type = 6;
+  repeated string source_chunk_ids = 7;
+}
+
+message Graph {
+  string workspace_id = 1;
+  string document_id = 2;
+  bool cross_document = 3;
+  repeated Node nodes = 4;
+  repeated Edge edges = 5;
+}

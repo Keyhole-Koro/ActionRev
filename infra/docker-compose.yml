@@ -20,7 +20,7 @@ services:
     volumes:
       - fake-gcs-data:/storage
     networks:
-      - actionrev
+      - synthify
 
   # ---------------------------------------------------------------------------
   # BigQuery エミュレータ
@@ -32,19 +32,19 @@ services:
       - "9050:9050"
       - "9060:9060"
     command:
-      - --project=actionrev-local
+      - --project=synthify-local
       - --dataset=graph
     healthcheck:
       test:
         - CMD
         - wget
         - -qO-
-        - "http://localhost:9050/bigquery/v2/projects/actionrev-local/datasets"
+        - "http://localhost:9050/bigquery/v2/projects/synthify-local/datasets"
       interval: 5s
       timeout: 3s
       retries: 15
     networks:
-      - actionrev
+      - synthify
 
   # ---------------------------------------------------------------------------
   # Firebase Auth エミュレータ
@@ -56,7 +56,7 @@ services:
       - "9099:9099"   # Auth emulator
       - "4000:4000"   # Emulator UI
     command: >
-      firebase emulators:start --only auth --project actionrev-local
+      firebase emulators:start --only auth --project synthify-local
     environment:
       FIREBASE_TOKEN: "local"
     volumes:
@@ -64,12 +64,12 @@ services:
       - firebase-emulator-data:/home/node/.cache/firebase
     working_dir: /home/node
     networks:
-      - actionrev
+      - synthify
 
 volumes:
   fake-gcs-data:
   firebase-emulator-data:
 
 networks:
-  actionrev:
+  synthify:
     driver: bridge

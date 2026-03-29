@@ -1,5 +1,5 @@
 resource "google_cloud_run_v2_service" "backend" {
-  name     = "actionrev-backend-${var.env}"
+  name     = "synthify-backend-${var.env}"
   location = var.region
   labels   = var.labels
 

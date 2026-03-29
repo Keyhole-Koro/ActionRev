@@ -184,7 +184,7 @@ backend/
 │       └── recovery.go        # panic リカバリ
 │
 ├── gen/                       # proto 生成コード (make generate で再生成)
-│   └── actionrev/graph/v1/
+│   └── synthify/graph/v1/
 │
 ├── Dockerfile
 ├── Dockerfile.dev             # Air ホットリロード
@@ -289,7 +289,7 @@ type CachedClient struct {
 
 ```
 proto/
-└── actionrev/graph/v1/
+└── synthify/graph/v1/
     ├── document.proto
     ├── graph.proto
     ├── graph_types.proto

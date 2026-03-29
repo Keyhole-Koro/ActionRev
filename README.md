@@ -28,3 +28,18 @@ Notes:
 - If `frontend/` or `backend/` is still missing, the corresponding container waits instead of crashing.
 - BigQuery and graph queries run in mock mode in the initial local stack.
 - The backend serves `GET /healthz` for a basic liveness check.
+
+## Proto workflow
+
+Proto sources live under [`proto/`](/home/unix/Synthify/proto) and are managed with `buf` via Docker.
+
+```bash
+make proto-lint
+make proto-build
+make proto-generate
+```
+
+Generated outputs:
+
+- Go: [`backend/gen/`](/home/unix/Synthify/backend/gen)
+- TypeScript: [`frontend/src/generated/`](/home/unix/Synthify/frontend/src/generated)

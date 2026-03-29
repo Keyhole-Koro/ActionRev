@@ -1,5 +1,5 @@
-resource "google_artifact_registry_repository" "actionrev" {
-  repository_id = "actionrev"
+resource "google_artifact_registry_repository" "synthify" {
+  repository_id = "synthify"
   location      = var.region
   format        = "DOCKER"
   description   = "ActionRev Docker images"

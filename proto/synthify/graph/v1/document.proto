@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package synthify.graph.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/synthify/backend/gen/synthify/graph/v1;graphv1";
+
+enum DocumentLifecycleState {
+  DOCUMENT_LIFECYCLE_STATE_UNSPECIFIED = 0;
+  DOCUMENT_LIFECYCLE_STATE_UPLOADED = 1;
+  DOCUMENT_LIFECYCLE_STATE_PENDING_NORMALIZATION = 2;
+  DOCUMENT_LIFECYCLE_STATE_PROCESSING = 3;
+  DOCUMENT_LIFECYCLE_STATE_COMPLETED = 4;
+  DOCUMENT_LIFECYCLE_STATE_FAILED = 5;
+}
+
+enum ExtractionDepth {
+  EXTRACTION_DEPTH_UNSPECIFIED = 0;
+  EXTRACTION_DEPTH_STANDARD = 1;
+  EXTRACTION_DEPTH_DEEP = 2;
+}
+
+message Document {
+  string document_id = 1;
+  string workspace_id = 2;
+  string filename = 3;
+  string mime_type = 4;
+  int64 file_size = 5;
+  DocumentLifecycleState status = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message CreateDocumentRequest {
+  string workspace_id = 1;
+  string filename = 2;
+  string mime_type = 3;
+  int64 file_size = 4;
+}
+
+message CreateDocumentResponse {
+  Document document = 1;
+  string upload_url = 2;
+  string upload_method = 3;
+  string upload_content_type = 4;
+}
+
+message GetUploadUrlRequest {
+  string workspace_id = 1;
+  string filename = 2;
+  string mime_type = 3;
+  int64 file_size = 4;
+}
+
+message GetUploadUrlResponse {
+  string upload_url = 1;
+  string upload_token = 2;
+  google.protobuf.Timestamp expires_at = 3;
+}
+
+message GetDocumentRequest {
+  string workspace_id = 1;
+  string document_id = 2;
+}
+
+message ListDocumentsRequest {
+  string workspace_id = 1;
+}
+
+message ListDocumentsResponse {
+  repeated Document documents = 1;
+}
+
+message StartProcessingRequest {
+  string workspace_id = 1;
+  string document_id = 2;
+  bool force_reprocess = 3;
+  ExtractionDepth extraction_depth = 4;
+}
+
+message StartProcessingResponse {
+  string document_id = 1;
+  DocumentLifecycleState status = 2;
+  string job_id = 3;
+}
+
+service DocumentService {
+  rpc CreateDocument(CreateDocumentRequest) returns (CreateDocumentResponse);
+  rpc GetUploadUrl(GetUploadUrlRequest) returns (GetUploadUrlResponse);
+  rpc GetDocument(GetDocumentRequest) returns (Document);
+  rpc ListDocuments(ListDocumentsRequest) returns (ListDocumentsResponse);
+  rpc StartProcessing(StartProcessingRequest) returns (StartProcessingResponse);
+}

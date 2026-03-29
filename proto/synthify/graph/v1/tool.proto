@@ -1,0 +1,115 @@
+syntax = "proto3";
+
+package synthify.graph.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/synthify/backend/gen/synthify/graph/v1;graphv1";
+
+enum NormalizationReviewState {
+  NORMALIZATION_REVIEW_STATE_UNSPECIFIED = 0;
+  NORMALIZATION_REVIEW_STATE_DRAFT = 1;
+  NORMALIZATION_REVIEW_STATE_REVIEWED = 2;
+  NORMALIZATION_REVIEW_STATE_APPROVED = 3;
+  NORMALIZATION_REVIEW_STATE_DEPRECATED = 4;
+}
+
+enum NormalizationToolRunMode {
+  NORMALIZATION_TOOL_RUN_MODE_UNSPECIFIED = 0;
+  NORMALIZATION_TOOL_RUN_MODE_DRY_RUN = 1;
+  NORMALIZATION_TOOL_RUN_MODE_APPLY = 2;
+}
+
+enum NormalizationToolRunState {
+  NORMALIZATION_TOOL_RUN_STATE_UNSPECIFIED = 0;
+  NORMALIZATION_TOOL_RUN_STATE_QUEUED = 1;
+  NORMALIZATION_TOOL_RUN_STATE_RUNNING = 2;
+  NORMALIZATION_TOOL_RUN_STATE_COMPLETED = 3;
+  NORMALIZATION_TOOL_RUN_STATE_FAILED = 4;
+}
+
+message NormalizationTool {
+  string tool_id = 1;
+  string problem_pattern = 2;
+  string display_name = 3;
+  string description = 4;
+  string source_code = 5;
+  NormalizationReviewState approval_status = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message NormalizationToolRun {
+  string run_id = 1;
+  string tool_id = 2;
+  NormalizationToolRunMode mode = 3;
+  NormalizationToolRunState status = 4;
+  string summary = 5;
+  google.protobuf.Timestamp started_at = 6;
+  google.protobuf.Timestamp completed_at = 7;
+}
+
+message GenerateNormalizationToolRequest {
+  string problem_pattern = 1;
+  string description = 2;
+  repeated string sample_inputs = 3;
+}
+
+message GenerateNormalizationToolResponse {
+  string generated_source_code = 1;
+}
+
+message SaveNormalizationToolRequest {
+  string problem_pattern = 1;
+  string display_name = 2;
+  string description = 3;
+  string source_code = 4;
+}
+
+message SaveNormalizationToolResponse {
+  NormalizationTool tool = 1;
+}
+
+message ListNormalizationToolsRequest {
+  NormalizationReviewState approval_status = 1;
+}
+
+message ListNormalizationToolsResponse {
+  repeated NormalizationTool tools = 1;
+}
+
+message UpdateNormalizationToolStatusRequest {
+  string tool_id = 1;
+  NormalizationReviewState approval_status = 2;
+}
+
+message UpdateNormalizationToolStatusResponse {
+  NormalizationTool tool = 1;
+}
+
+message RunNormalizationToolRequest {
+  string tool_id = 1;
+  NormalizationToolRunMode mode = 2;
+  repeated string document_ids = 3;
+}
+
+message RunNormalizationToolResponse {
+  NormalizationToolRun run = 1;
+}
+
+message GetNormalizationToolRunRequest {
+  string run_id = 1;
+}
+
+message GetNormalizationToolRunResponse {
+  NormalizationToolRun run = 1;
+}
+
+service ToolService {
+  rpc GenerateNormalizationTool(GenerateNormalizationToolRequest) returns (GenerateNormalizationToolResponse);
+  rpc SaveNormalizationTool(SaveNormalizationToolRequest) returns (SaveNormalizationToolResponse);
+  rpc ListNormalizationTools(ListNormalizationToolsRequest) returns (ListNormalizationToolsResponse);
+  rpc UpdateNormalizationToolStatus(UpdateNormalizationToolStatusRequest) returns (UpdateNormalizationToolStatusResponse);
+  rpc RunNormalizationTool(RunNormalizationToolRequest) returns (RunNormalizationToolResponse);
+  rpc GetNormalizationToolRun(GetNormalizationToolRunRequest) returns (GetNormalizationToolRunResponse);
+}

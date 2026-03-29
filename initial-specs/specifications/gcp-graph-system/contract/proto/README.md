@@ -6,21 +6,21 @@
 
 ## Layout
 
-- [actionrev/graph/v1/common.proto](actionrev/graph/v1/common.proto)
-- [actionrev/graph/v1/graph_types.proto](actionrev/graph/v1/graph_types.proto)
-- [actionrev/graph/v1/user.proto](actionrev/graph/v1/user.proto)
-- [actionrev/graph/v1/workspace.proto](actionrev/graph/v1/workspace.proto)
-- [actionrev/graph/v1/billing.proto](actionrev/graph/v1/billing.proto)
-- [actionrev/graph/v1/document.proto](actionrev/graph/v1/document.proto)
-- [actionrev/graph/v1/graph.proto](actionrev/graph/v1/graph.proto)
-- [actionrev/graph/v1/node.proto](actionrev/graph/v1/node.proto)
-- [actionrev/graph/v1/job.proto](actionrev/graph/v1/job.proto)
-- [actionrev/graph/v1/tool.proto](actionrev/graph/v1/tool.proto)
-- [actionrev/graph/v1/monitoring.proto](actionrev/graph/v1/monitoring.proto)
+- [synthify/graph/v1/common.proto](synthify/graph/v1/common.proto)
+- [synthify/graph/v1/graph_types.proto](synthify/graph/v1/graph_types.proto)
+- [synthify/graph/v1/user.proto](synthify/graph/v1/user.proto)
+- [synthify/graph/v1/workspace.proto](synthify/graph/v1/workspace.proto)
+- [synthify/graph/v1/billing.proto](synthify/graph/v1/billing.proto)
+- [synthify/graph/v1/document.proto](synthify/graph/v1/document.proto)
+- [synthify/graph/v1/graph.proto](synthify/graph/v1/graph.proto)
+- [synthify/graph/v1/node.proto](synthify/graph/v1/node.proto)
+- [synthify/graph/v1/job.proto](synthify/graph/v1/job.proto)
+- [synthify/graph/v1/tool.proto](synthify/graph/v1/tool.proto)
+- [synthify/graph/v1/monitoring.proto](synthify/graph/v1/monitoring.proto)
 
 ## Design Policy
 
-- package は `actionrev.graph.v1` とする
+- package は `synthify.graph.v1` とする
 - service は用途ごとに分離し、1ファイル1service を原則とする
 - 各 message / enum は所属ドメインの proto ファイルが所有する
 - `common.proto` は複数ドメインをまたぐ共有型のみを保持する（`DocumentChunk` 等）
@@ -29,7 +29,7 @@
 - package を domain ごとに分割せず、初期は単一 package のまま運用する
 - frontend が `React Flow` に直接マップしやすい message 形状を優先する
 - 長時間処理は unary RPC で閉じず、job 起動と status 参照に分割する
-- breaking change は `actionrev.graph.v2` を新設して吸収する
+- breaking change は `synthify.graph.v2` を新設して吸収する
 - `node.proto` は node 種別別 API ではなく、`EntityRef` を受ける `GetGraphEntityDetail` で詳細取得を抽象化する
 
 ## Notes

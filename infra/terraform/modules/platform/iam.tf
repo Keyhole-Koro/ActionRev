@@ -1,11 +1,11 @@
 resource "google_service_account" "backend" {
-  account_id   = "actionrev-backend"
+  account_id   = "synthify-backend"
   display_name = "ActionRev Backend (Cloud Run)"
   project      = var.project_id
 }
 
 resource "google_service_account" "sandbox" {
-  account_id   = "actionrev-sandbox"
+  account_id   = "synthify-sandbox"
   display_name = "ActionRev Sandbox Runner (Cloud Run Jobs)"
   project      = var.project_id
 }

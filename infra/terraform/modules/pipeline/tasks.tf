@@ -1,5 +1,5 @@
 resource "google_cloud_tasks_queue" "processing" {
-  name     = "actionrev-processing-${var.env}"
+  name     = "synthify-processing-${var.env}"
   location = var.region
 
   rate_limits {

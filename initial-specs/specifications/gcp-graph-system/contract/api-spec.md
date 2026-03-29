@@ -347,7 +347,7 @@ Stripe Customer Portal セッションを作成し、プラン変更・請求管
 
 ## Proto Design Guidelines
 
-- package は単一の `actionrev.graph.v1` とし、versioning は package suffix で管理する
+- package は単一の `synthify.graph.v1` とし、versioning は package suffix で管理する
 - `.proto` ファイルは service 単位で分割し、1ファイル1service を原則とする
 - service は `UserService`, `WorkspaceService`, `BillingService`, `DocumentService`, `GraphService`, `NodeService`, `JobService`, `ToolService`, `MonitoringService` に分割する
 - `GraphService` は `GetGraph` / `ExpandNeighbors` / `FindPaths` のグラフ traversal RPC のみを持つ
@@ -376,7 +376,7 @@ Stripe Customer Portal セッションを作成し、プラン変更・請求管
 
 ### Package Evolution Policy
 
-- 後方互換を壊す変更は `actionrev.graph.v2` を新設して行う
+- 後方互換を壊す変更は `synthify.graph.v2` を新設して行う
 - `v1` では field 追加を許容し、field 削除・型変更・意味変更は禁止する
 - `buf breaking` を導入した時点で `main` ブランチとの差分を自動検証する
 

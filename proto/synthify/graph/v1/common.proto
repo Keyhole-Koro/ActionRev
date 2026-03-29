@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package synthify.graph.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/synthify/backend/gen/synthify/graph/v1;graphv1";
+
+message DocumentChunk {
+  string chunk_id = 1;
+  string document_id = 2;
+  string source_filename = 3;
+  string section_title = 4;
+  uint32 page = 5;
+  string text = 6;
+  google.protobuf.Timestamp created_at = 7;
+}

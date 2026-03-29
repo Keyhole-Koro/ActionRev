@@ -29,7 +29,7 @@ provider "google-beta" {
 locals {
   labels = {
     env     = var.env
-    app     = "actionrev"
+    app     = "synthify"
     managed = "terraform"
   }
 }

@@ -1,6 +1,6 @@
 # サンドボックス Cloud Run Job (正規化ツール隔離実行)
 resource "google_cloud_run_v2_job" "sandbox" {
-  name     = "actionrev-sandbox-${var.env}"
+  name     = "synthify-sandbox-${var.env}"
   location = var.region
   labels   = var.labels
 

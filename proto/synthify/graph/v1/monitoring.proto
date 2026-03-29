@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package synthify.graph.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/synthify/backend/gen/synthify/graph/v1;graphv1";
+
+message GetPipelineStatsRequest {
+  string workspace_id = 1;
+  google.protobuf.Timestamp since = 2;
+}
+
+message PipelineMetrics {
+  string workspace_id = 1;
+  uint64 total_documents = 2;
+  uint64 completed_documents = 3;
+  uint64 failed_documents = 4;
+  double avg_latency_seconds = 5;
+  double llm_cost_usd = 6;
+}
+
+message GetExtractionStatsRequest {
+  string workspace_id = 1;
+  string document_id = 2;
+}
+
+message ExtractionMetrics {
+  string workspace_id = 1;
+  string document_id = 2;
+  uint64 total_nodes = 3;
+  uint64 total_edges = 4;
+  double avg_nodes_per_document = 5;
+  double avg_edges_per_document = 6;
+}
+
+message EvaluationPoint {
+  google.protobuf.Timestamp week_start = 1;
+  double precision = 2;
+  double recall = 3;
+  double level_accuracy = 4;
+}
+
+message GetEvaluationTrendRequest {
+  string workspace_id = 1;
+  uint32 weeks = 2;
+}
+
+message EvaluationMetrics {
+  string workspace_id = 1;
+  repeated EvaluationPoint points = 2;
+}
+
+message FailedDocument {
+  string document_id = 1;
+  string filename = 2;
+  string error_message = 3;
+  google.protobuf.Timestamp failed_at = 4;
+}
+
+message ListFailedDocumentsRequest {
+  string workspace_id = 1;
+  google.protobuf.Timestamp since = 2;
+}
+
+message ErrorMetrics {
+  string workspace_id = 1;
+  repeated FailedDocument failed_documents = 2;
+}
+
+service MonitoringService {
+  rpc GetPipelineStats(GetPipelineStatsRequest) returns (PipelineMetrics);
+  rpc GetExtractionStats(GetExtractionStatsRequest) returns (ExtractionMetrics);
+  rpc GetEvaluationTrend(GetEvaluationTrendRequest) returns (EvaluationMetrics);
+  rpc ListFailedDocuments(ListFailedDocumentsRequest) returns (ErrorMetrics);
+}
