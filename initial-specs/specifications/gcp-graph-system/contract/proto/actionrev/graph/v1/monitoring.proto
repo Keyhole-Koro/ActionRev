@@ -6,10 +6,10 @@ option go_package = "github.com/actionrev/backend/gen/actionrev/graph/v1;graphv1
 
 // MonitoringService は dev ロールを持つ管理者のみアクセス可能
 service MonitoringService {
-  rpc GetPipelineStats(GetPipelineStatsRequest) returns (GetPipelineStatsResponse);
-  rpc GetExtractionStats(GetExtractionStatsRequest) returns (GetExtractionStatsResponse);
-  rpc GetEvaluationTrend(GetEvaluationTrendRequest) returns (GetEvaluationTrendResponse);
-  rpc ListFailedDocuments(ListFailedDocumentsRequest) returns (ListFailedDocumentsResponse);
+  rpc GetPipelineStats(GetPipelineStatsRequest) returns (PipelineMetrics);
+  rpc GetExtractionStats(GetExtractionStatsRequest) returns (ExtractionMetrics);
+  rpc GetEvaluationTrend(GetEvaluationTrendRequest) returns (EvaluationMetrics);
+  rpc ListFailedDocuments(ListFailedDocumentsRequest) returns (ErrorMetrics);
 }
 
 message GetPipelineStatsRequest {
@@ -22,7 +22,7 @@ message StageLatency {
   double p95_sec = 3;
 }
 
-message GetPipelineStatsResponse {
+message PipelineMetrics {
   repeated StageLatency stage_latencies = 1;
   int32 completed_count = 2;
   int32 failed_count = 3;
@@ -34,7 +34,7 @@ message GetExtractionStatsRequest {
   string document_id = 1; // 省略時は全ドキュメント集計
 }
 
-message GetExtractionStatsResponse {
+message ExtractionMetrics {
   map<string, int32> nodes_by_level = 1;    // "0" -> 3, "1" -> 12, ...
   map<string, int32> nodes_by_category = 2; // "concept" -> 58, ...
   int32 pass1_node_count = 3;
@@ -54,7 +54,7 @@ message GetEvaluationTrendRequest {
   int32 weeks = 1; // 取得週数（デフォルト: 8）
 }
 
-message GetEvaluationTrendResponse {
+message EvaluationMetrics {
   repeated WeeklyMetric metrics = 1;
 }
 
@@ -71,6 +71,6 @@ message ListFailedDocumentsRequest {
   int32 limit = 2;
 }
 
-message ListFailedDocumentsResponse {
+message ErrorMetrics {
   repeated FailedDocument documents = 1;
 }
