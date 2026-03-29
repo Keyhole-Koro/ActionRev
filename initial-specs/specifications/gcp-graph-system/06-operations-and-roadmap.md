@@ -38,15 +38,13 @@ Discord の Incoming Webhook を使って管理者チャンネルに通知する
 | ツール自動承認 | LLM スコア ≥ 0.9 | ✅ 正規化ツールが自動承認されました / ツール名・スコア |
 | ツール手動承認・廃止 | 管理者が操作 | 👤 ツールが手動承認/廃止されました / ツール名・操作者 |
 | document 処理失敗 | `status=failed` | ❌ ドキュメント処理が失敗 / ファイル名・エラーステージ・リンク |
-| 評価指標劣化 | 週次 CI で 5% 以上低下 | 📉 評価指標が劣化しています / 指標名・前週比・差分 |
-| CI/CD 失敗 | GitHub Actions 失敗 | 🔴 デプロイ失敗 / ジョブ名・エラー概要・リンク |
+| 評価指標劣化 | 週次評価で 5% 以上低下 | 📉 評価指標が劣化しています / 指標名・前週比・差分 |
 | Gemini コスト閾値超過 | 日次コストが設定額超過 | 💸 Gemini コストが閾値を超えました / 当日コスト・閾値 |
 | Cloud Run エラー率急上昇 | 直近5分のエラー率が閾値超過 | 🔥 エラー率が急上昇しています / エラー率・閾値 |
 
 ### 実装方針
 
 - Cloud Run バックエンドから直接 Discord Webhook URL に HTTP POST する
-- CI/CD 通知は GitHub Actions から直接 POST する
 - コスト・エラー率監視は Cloud Monitoring のアラートポリシーから Cloud Functions 経由で POST する
 - Webhook URL は `DISCORD_WEBHOOK_URL` として Secret Manager に保存する
 
@@ -188,52 +186,6 @@ Discord の Incoming Webhook を使って管理者チャンネルに通知する
 | `editor` | ドキュメントのアップロード・削除・処理実行・メンバー招待 |
 | `viewer` | グラフ閲覧のみ |
 | `dev` | `/dev/stats` アクセス（editor/viewer に追加付与） |
-
----
-
-## CI/CD Pipeline
-
-GitHub Actions で Backend・Frontend・Proto の3系統を管理する。
-
-### Backend（Cloud Run）
-
-```
-push to main:
-  1. go test（ユニット・結合テスト）
-  2. docker build
-  3. Artifact Registry へ push
-  4. Cloud Run へ deploy
-```
-
-### Frontend（Firebase Hosting）
-
-```
-push to main:
-  1. npm ci
-  2. npm run build
-  3. firebase deploy --only hosting
-```
-
-### Proto（buf）
-
-```
-PR 作成時:
-  1. buf lint（proto の文法・スタイル検査）
-  # breaking change check は API が安定したら追加する
-
-push to main:
-  1. buf generate（Go / TypeScript コード生成）
-  2. 生成コードをリポジトリに commit
-```
-
-### 評価データ定期実行
-
-```
-毎週月曜 0:00:
-  1. gold document セットを使い抽出パイプラインを実行（Gemini キャッシュ: GEMINI_CACHE_ENABLED=true）
-  2. 指標（Precision / Recall / level 一致率）を BigQuery に記録
-  3. 前週比で 5% 以上劣化した場合に Discord 通知
-```
 
 ---
 

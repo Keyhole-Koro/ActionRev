@@ -8,7 +8,7 @@
 - 契約定義は `Protocol Buffers` で管理する
 - 外部公開 REST API は初期スコープに含めない
 - 重い処理は RPC からジョブを起動し、完了確認は status 取得 RPC で行う
-- proto の叩き台は [proto/README.md](/home/unix/ActionRev/docs/specifications/gcp-graph-system/proto/README.md) を参照する
+- proto の叩き台は [proto/README.md](/home/unix/ActionRev/initial-specs/specifications/gcp-graph-system/proto/README.md) を参照する
 
 ## Services
 

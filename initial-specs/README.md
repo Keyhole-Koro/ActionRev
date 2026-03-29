@@ -4,4 +4,4 @@
 
 ## Documents
 
-- [GCP Graph System Specification](/home/unix/ActionRev/docs/specifications/gcp-graph-system/README.md)
+- [GCP Graph System Specification](/home/unix/ActionRev/initial-specs/specifications/gcp-graph-system/README.md)
