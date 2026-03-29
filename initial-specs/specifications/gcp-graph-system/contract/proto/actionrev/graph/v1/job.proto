@@ -12,7 +12,7 @@ message Job {
   string job_id = 1;
   string document_id = 2;
   JobType type = 3;
-  JobStatus status = 4;
+  JobLifecycleState status = 4;
   string created_at = 5;
   string started_at = 6;
   string completed_at = 7;
@@ -25,12 +25,12 @@ enum JobType {
   JOB_TYPE_REPROCESS_DOCUMENT = 2;
 }
 
-enum JobStatus {
-  JOB_STATUS_UNSPECIFIED = 0;
-  JOB_STATUS_QUEUED = 1;
-  JOB_STATUS_RUNNING = 2;
-  JOB_STATUS_SUCCEEDED = 3;
-  JOB_STATUS_FAILED = 4;
+enum JobLifecycleState {
+  JOB_LIFECYCLE_STATE_UNSPECIFIED = 0;
+  JOB_LIFECYCLE_STATE_QUEUED = 1;
+  JOB_LIFECYCLE_STATE_RUNNING = 2;
+  JOB_LIFECYCLE_STATE_SUCCEEDED = 3;
+  JOB_LIFECYCLE_STATE_FAILED = 4;
 }
 
 message GetJobStatusRequest {

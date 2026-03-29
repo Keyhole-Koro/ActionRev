@@ -1,5 +1,28 @@
 # 04. Data Model
 
+## State Naming Policy
+
+状態値は用途ごとに state family を分けて扱う。実装では文字列の再利用ではなく、family ごとの enum / type alias を定義する前提とする。
+
+### State Families
+
+| Family | 用途 | 主な値 |
+| --- | --- | --- |
+| `DocumentLifecycleState` | document 全体の処理ライフサイクル | `uploaded` / `pending_normalization` / `processing` / `completed` / `failed` |
+| `JobLifecycleState` | 非同期ジョブ全体の実行状態 | `queued` / `running` / `succeeded` / `failed` |
+| `PipelineStageState` | 個別ステージの実行結果 | `pending` / `running` / `succeeded` / `failed` / `skipped` |
+| `NormalizationReviewState` | 正規化ツールの承認状態 | `draft` / `reviewed` / `approved` / `deprecated` |
+| `AliasMergeState` | canonical 候補の統合レビュー状態 | `suggested` / `approved` / `rejected` |
+| `GraphProjectionScope` | API 上の graph 投影対象 | `document` / `canonical` |
+| `SyncJobState` | BigQuery から探索基盤への同期ジョブ状態 | `queued` / `running` / `completed` / `failed` |
+
+### Naming Rules
+
+- `status` は永続テーブル上の状態カラム名に使う
+- `state` は仕様上の抽象概念として使い、必要に応じて family 名を付ける
+- `scope` は `GraphProjectionScope` を指す専用語として使う
+- `approved` や `failed` のような同名値は family が違えば意味も異なるため、仕様と実装の両方で混同しない
+
 ## Tables
 
 ### users
@@ -83,6 +106,7 @@ Workspace
 
 #### Status Values
 
+- family 名: `DocumentLifecycleState`
 - `uploaded` : メタデータ登録とファイル upload 完了後、解析開始前
 - `pending_normalization` : 正規化ツールの承認待ちで処理を停止中
 - `processing`
@@ -126,6 +150,7 @@ Workspace
 - API 返却時の `canonical_node_id` は `node_aliases` を解決して補完する派生属性であり、`nodes` テーブルの永続カラムには含めない
 - `GetGraph` の node は `id = node_id`, `scope = document` を返す
 - `ExpandNeighbors` / `FindPaths` の node は `id = canonical_node_id`, `scope = canonical` を返す
+- `scope` は `GraphProjectionScope` として扱う
 
 #### Node Category Values
 
@@ -164,6 +189,7 @@ Workspace
 - API 返却時の `Edge.scope` は派生属性であり、`edges` テーブルの永続カラムには含めない
 - `GetGraph` の edge は `scope = document` を返す
 - `ExpandNeighbors` / `FindPaths` の edge は `scope = canonical` を返す
+- `Edge.scope` も `GraphProjectionScope` を使う
 
 #### Edge Type Values
 
@@ -193,6 +219,8 @@ Workspace
 | similarity_score | FLOAT64 | 類似スコア |
 | merge_status | STRING | `suggested` / `approved` / `rejected` |
 | created_at | TIMESTAMP | 作成日時 |
+
+- `merge_status` は `AliasMergeState` として扱う
 
 ### canonical_nodes
 
@@ -253,9 +281,27 @@ Workspace
 | started_at | TIMESTAMP | 開始日時 |
 | completed_at | TIMESTAMP | 完了日時 |
 
+- `graph_sync_jobs.status` は `SyncJobState` として扱う
+
 ### processing_jobs
 
-- 非同期ジョブの状態管理に利用する
+非同期ジョブとステージ別実行結果の追跡に利用する。
+
+| Column | Type | Description |
+| --- | --- | --- |
+| job_id | STRING | ジョブ識別子 |
+| document_id | STRING | 対象 document |
+| job_type | STRING | `process_document` / `reprocess_document` |
+| job_status | STRING | `queued` / `running` / `succeeded` / `failed` |
+| stage_name | STRING | `raw_intake` / `normalization` / `text_extraction` / `semantic_chunking` / `brief_generation` / `pass1_extraction` / `pass2_synthesis` / `html_summary_generation` / `persistence` |
+| stage_state | STRING | `pending` / `running` / `succeeded` / `failed` / `skipped` |
+| error_message | STRING | 失敗理由 |
+| created_at | TIMESTAMP | 作成日時 |
+| started_at | TIMESTAMP | 開始日時 |
+| completed_at | TIMESTAMP | 完了日時 |
+
+- `job_status` は `JobLifecycleState` として扱う
+- `stage_state` は `PipelineStageState` として扱う
 
 ### graph_snapshots
 
@@ -300,6 +346,8 @@ Workspace
 | created_by | STRING | 作成者ユーザーID |
 | created_at | TIMESTAMP | 作成日時 |
 | updated_at | TIMESTAMP | 更新日時 |
+
+- `approval_status` は `NormalizationReviewState` として扱う
 
 ### normalization_tool_runs
 

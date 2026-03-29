@@ -21,19 +21,19 @@ message Document {
   string gcs_uri = 4;
   string mime_type = 5;
   int64 file_size = 6;
-  DocumentStatus status = 7;
+  DocumentLifecycleState status = 7;
   ExtractionDepth extraction_depth = 8;
   string created_at = 9;
   string updated_at = 10;
 }
 
-enum DocumentStatus {
-  DOCUMENT_STATUS_UNSPECIFIED = 0;
-  DOCUMENT_STATUS_UPLOADED = 1;
-  DOCUMENT_STATUS_PENDING_NORMALIZATION = 2; // 正規化ツールの承認待ち
-  DOCUMENT_STATUS_PROCESSING = 3;
-  DOCUMENT_STATUS_COMPLETED = 4;
-  DOCUMENT_STATUS_FAILED = 5;
+enum DocumentLifecycleState {
+  DOCUMENT_LIFECYCLE_STATE_UNSPECIFIED = 0;
+  DOCUMENT_LIFECYCLE_STATE_UPLOADED = 1;
+  DOCUMENT_LIFECYCLE_STATE_PENDING_NORMALIZATION = 2; // 正規化ツールの承認待ち
+  DOCUMENT_LIFECYCLE_STATE_PROCESSING = 3;
+  DOCUMENT_LIFECYCLE_STATE_COMPLETED = 4;
+  DOCUMENT_LIFECYCLE_STATE_FAILED = 5;
 }
 
 enum ExtractionDepth {
@@ -68,7 +68,7 @@ message ListDocumentsRequest {
   string workspace_id = 1;
   int32 page_size = 2;
   string page_token = 3;
-  DocumentStatus status_filter = 4;
+  DocumentLifecycleState status_filter = 4;
 }
 
 message ListDocumentsResponse {

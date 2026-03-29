@@ -22,7 +22,7 @@ message NormalizationTool {
   string problem_pattern = 5;
   string entrypoint = 6;
   repeated string allowed_file_types = 7;
-  ToolApprovalStatus approval_status = 8;
+  NormalizationReviewState approval_status = 8;
   string approved_by = 9;       // "llm" or "human"
   double llm_review_score = 10;
   string llm_review_reason = 11;
@@ -47,12 +47,12 @@ message NormalizationToolRun {
   string completed_at = 13;
 }
 
-enum ToolApprovalStatus {
-  TOOL_APPROVAL_STATUS_UNSPECIFIED = 0;
-  TOOL_APPROVAL_STATUS_DRAFT = 1;
-  TOOL_APPROVAL_STATUS_REVIEWED = 2;
-  TOOL_APPROVAL_STATUS_APPROVED = 3;
-  TOOL_APPROVAL_STATUS_DEPRECATED = 4;
+enum NormalizationReviewState {
+  NORMALIZATION_REVIEW_STATE_UNSPECIFIED = 0;
+  NORMALIZATION_REVIEW_STATE_DRAFT = 1;
+  NORMALIZATION_REVIEW_STATE_REVIEWED = 2;
+  NORMALIZATION_REVIEW_STATE_APPROVED = 3;
+  NORMALIZATION_REVIEW_STATE_DEPRECATED = 4;
 }
 
 enum ToolRunMode {
@@ -96,7 +96,7 @@ message SaveNormalizationToolResponse {
 
 message ListNormalizationToolsRequest {
   string file_type = 1;
-  ToolApprovalStatus approval_status = 2;
+  NormalizationReviewState approval_status = 2;
 }
 
 message ListNormalizationToolsResponse {
@@ -105,7 +105,7 @@ message ListNormalizationToolsResponse {
 
 message UpdateNormalizationToolStatusRequest {
   string tool_id = 1;
-  ToolApprovalStatus status = 2;
+  NormalizationReviewState status = 2;
 }
 
 message UpdateNormalizationToolStatusResponse {

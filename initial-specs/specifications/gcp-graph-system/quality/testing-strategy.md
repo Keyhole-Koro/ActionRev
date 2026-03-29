@@ -4,6 +4,10 @@
 
 本章ではコードレベルの品質保証方針を定義する。LLM 出力の品質評価は [evaluation-data.md](evaluation-data.md) を参照。
 
+- 状態値の呼称は [data-model.md](../domain/data-model.md) の `State Naming Policy` に従う
+- 特に `DocumentLifecycleState.failed` と `PipelineStageState.failed` は別物として検証する
+- `JobLifecycleState` はジョブ全体、`PipelineStageState` はジョブ内 stage 単位として分けて検証する
+
 ---
 
 ## テストの分類

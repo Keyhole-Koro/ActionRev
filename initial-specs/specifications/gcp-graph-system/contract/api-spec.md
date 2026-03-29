@@ -354,11 +354,11 @@ Stripe Customer Portal セッションを作成し、プラン変更・請求管
 ### Proto File Ownership
 
 - `common.proto`: 複数ドメインをまたぐ共有型 (`DocumentChunk`) のみ保持し、service は定義しない
-- `graph_types.proto`: `Node`, `Edge`, `Graph` および関連 enum (`NodeCategory`, `NodeScope`, `EdgeType` 等) を保持し、service は定義しない
-- `document.proto`: `Document` / `DocumentStatus` / `ExtractionDepth` と `DocumentService` (upload URL 発行・メタデータ取得・処理開始) を扱う
+- `graph_types.proto`: `Node`, `Edge`, `Graph` および関連 enum (`NodeCategory`, `GraphProjectionScope`, `EdgeType` 等) を保持し、service は定義しない
+- `document.proto`: `Document` / `DocumentLifecycleState` / `ExtractionDepth` と `DocumentService` (upload URL 発行・メタデータ取得・処理開始) を扱う
 - `graph.proto`: `GraphService` (traversal 3 RPC: `GetGraph`, `ExpandNeighbors`, `FindPaths`) のみを扱う
-- `node.proto`: `NodeService` (単一ノード詳細取得) を扱う
-- `job.proto`: `Job` / `JobType` / `JobStatus` と `JobService` (非同期ジョブ状態取得) を扱う
+- `node.proto`: `NodeService` (`GetGraphEntityDetail` による graph entity 詳細取得) を扱う
+- `job.proto`: `Job` / `JobType` / `JobLifecycleState` と `JobService` (非同期ジョブ状態取得) を扱う
 - `tool.proto`: `NormalizationTool` / `NormalizationToolRun` / 関連 enum と `ToolService` を扱う
 - `monitoring.proto`: `MonitoringService` (パイプライン統計・評価トレンド・失敗ドキュメント一覧) を扱う
 - `billing.proto`: `BillingService` (Stripe セッション管理) を扱う

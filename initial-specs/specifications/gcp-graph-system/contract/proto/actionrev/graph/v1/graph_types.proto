@@ -19,7 +19,7 @@ message Node {
   double confidence = 10;
   string created_at = 11;
   string canonical_node_id = 12;
-  NodeScope scope = 13;
+  GraphProjectionScope scope = 13;
 }
 
 message Edge {
@@ -32,7 +32,7 @@ message Edge {
   double weight = 7;
   string source_chunk_id = 8;
   string created_at = 9;
-  NodeScope scope = 10;
+  GraphProjectionScope scope = 10;
 }
 
 message Graph {
@@ -61,10 +61,10 @@ enum NodeEntityType {
   NODE_ENTITY_TYPE_LOCATION = 5;
 }
 
-enum NodeScope {
-  NODE_SCOPE_UNSPECIFIED = 0;
-  NODE_SCOPE_DOCUMENT = 1;
-  NODE_SCOPE_CANONICAL = 2;
+enum GraphProjectionScope {
+  GRAPH_PROJECTION_SCOPE_UNSPECIFIED = 0;
+  GRAPH_PROJECTION_SCOPE_DOCUMENT = 1;
+  GRAPH_PROJECTION_SCOPE_CANONICAL = 2;
 }
 
 enum EdgeType {

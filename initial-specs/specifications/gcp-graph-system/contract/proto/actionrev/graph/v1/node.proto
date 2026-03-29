@@ -13,7 +13,7 @@ service NodeService {
 
 message EntityRef {
   string workspace_id = 1;
-  NodeScope scope = 2;
+  GraphProjectionScope scope = 2;
   string id = 3;
   string document_id = 4;
 }

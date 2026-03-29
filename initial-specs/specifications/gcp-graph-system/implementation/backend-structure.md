@@ -154,7 +154,7 @@ func toConnectError(err error) error {
 type DocumentRepository interface {
     Create(ctx context.Context, doc domain.Document) error
     GetByID(ctx context.Context, id string) (domain.Document, error)
-    UpdateStatus(ctx context.Context, id string, status domain.DocumentStatus) error
+    UpdateStatus(ctx context.Context, id string, status domain.DocumentLifecycleState) error
     ListByWorkspace(ctx context.Context, workspaceID string, opts ListOptions) ([]domain.Document, error)
 }
 
