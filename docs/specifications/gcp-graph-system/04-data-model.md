@@ -113,7 +113,7 @@ Workspace
 | label | STRING | 表示ラベル |
 | level | INT64 | 階層レベル（0=ドメイン / 1=概念 / 2=施策・アクション / 3=詳細） |
 | category | STRING | ノードカテゴリ（`concept` / `entity` / `claim` / `evidence` / `counter`） |
-| entity_type | STRING | エンティティ種別（category=entity のみ: `organization` / `person` / `metric` / `date`） |
+| entity_type | STRING | エンティティ種別（category=entity のみ: `organization` / `person` / `metric` / `date` / `location`） |
 | description | STRING | ノード説明 |
 | summary_html | STRING | ノードサマリの HTML（構造タグのみ、CSS はアプリ側注入）。null の場合は description にフォールバック |
 | source_chunk_id | STRING | 出典 chunk |

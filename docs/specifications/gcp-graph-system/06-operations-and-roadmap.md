@@ -21,6 +21,10 @@
 - 再処理可能な設計とする
 - `StartProcessing` は upload 完了済みかつ `documents.status=uploaded` の document のみ受け付ける
 - upload 未完了や不正な状態遷移はジョブを起動せず、同期エラーとして返す
+- Gemini の返却 JSON が不正な場合は JSON repair を 1 回だけ試行する
+- JSON repair 後も不正な場合、同一入力に対する Gemini 再試行を最大 2 回まで行う
+- chunk 単位の抽出で 1 chunk でも確定失敗した場合、その document の処理全体を `failed` にする
+- HTML サマリ生成の失敗は document 全体の失敗にせず、該当 node の `summary_html=null` で継続する
 
 ## Discord Webhook Notifications
 
