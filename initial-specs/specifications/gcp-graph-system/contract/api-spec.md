@@ -314,18 +314,22 @@ document の解析を開始する。
 #### GetPipelineStats
 
 ドキュメント処理パイプラインの集計統計を取得する。ステージ別レイテンシ・完了数・LLM コスト等を返す。`since` を省略した場合は過去30日を対象とする。
+この RPC は `PipelineMetrics` を返す。
 
 #### GetExtractionStats
 
 ノード・エッジの抽出統計を取得する。`document_id` を省略した場合は全ドキュメント集計を返す。
+この RPC は `ExtractionMetrics` を返す。
 
 #### GetEvaluationTrend
 
 週次の精度・再現率・レベル別正解率の推移を取得する。`weeks` を省略した場合は直近8週分を返す。
+この RPC は `EvaluationMetrics` を返す。
 
 #### ListFailedDocuments
 
 処理に失敗したドキュメントの一覧を取得する。`since` でフィルタ可能。
+この RPC は `ErrorMetrics` のための失敗一覧を返す。
 
 ### BillingService
 
@@ -363,7 +367,7 @@ Stripe Customer Portal セッションを作成し、プラン変更・請求管
 - `node.proto`: `NodeService` (`GetGraphEntityDetail` による graph entity 詳細取得) を扱う
 - `job.proto`: `Job` / `JobType` / `JobLifecycleState` と `JobService` (非同期ジョブ状態取得) を扱う
 - `tool.proto`: `NormalizationTool` / `NormalizationToolRun` / 関連 enum と `ToolService` を扱う
-- `monitoring.proto`: `MonitoringService` (パイプライン統計・評価トレンド・失敗ドキュメント一覧) を扱う
+- `monitoring.proto`: `MonitoringService` (`PipelineMetrics`, `ExtractionMetrics`, `EvaluationMetrics`, `ErrorMetrics`) を扱う
 - `billing.proto`: `BillingService` (Stripe セッション管理) を扱う
 - `user.proto`: `UserService` (認証後のユーザー同期) を扱う
 - `workspace.proto`: `WorkspaceService` (workspace 管理・メンバー管理) を扱う

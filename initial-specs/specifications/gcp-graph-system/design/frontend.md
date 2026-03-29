@@ -390,6 +390,16 @@ Canvas 右上の 🔍 アイコンで展開するサイドパネル。
 
 ## 開発者向け統計ビューワー（`/dev/stats`）
 
+`/dev/stats` の各タブは metrics family に対応させる。
+
+| Metrics Family | タブ | 主な API |
+| --- | --- | --- |
+| `PipelineMetrics` | パイプライン | `GetPipelineStats` |
+| `ExtractionMetrics` | 抽出品質 | `GetExtractionStats` |
+| `EvaluationMetrics` | 評価 | `GetEvaluationTrend` |
+| `ErrorMetrics` | エラー | `ListFailedDocuments` |
+| `NormalizationMetrics` | 正規化ツール | `ListNormalizationTools`, `GetNormalizationToolRun` |
+
 ### 画面構成
 
 ```
@@ -402,7 +412,7 @@ Canvas 右上の 🔍 アイコンで展開するサイドパネル。
 
 ---
 
-### タブ 1: パイプライン統計
+### タブ 1: パイプライン統計 (`PipelineMetrics`)
 
 ```
 ┌─── ステージ別 処理時間 ────────────────────────────┐
@@ -426,7 +436,7 @@ Canvas 右上の 🔍 アイコンで展開するサイドパネル。
 
 ---
 
-### タブ 2: 抽出品質統計
+### タブ 2: 抽出品質統計 (`ExtractionMetrics`)
 
 ```
 ┌─── ドキュメント選択 ──────────────────────────────┐
@@ -454,7 +464,7 @@ Canvas 右上の 🔍 アイコンで展開するサイドパネル。
 
 ---
 
-### タブ 3: 評価トレンド
+### タブ 3: 評価トレンド (`EvaluationMetrics`)
 
 ```
 ┌─── Precision / Recall 週次推移 ─────────────────┐
@@ -484,7 +494,7 @@ Canvas 右上の 🔍 アイコンで展開するサイドパネル。
 
 ---
 
-### タブ 4: エラー分析
+### タブ 4: エラー分析 (`ErrorMetrics`)
 
 ```
 ┌─── エラー種別 ────────────┐  ┌─── 失敗ドキュメント一覧 ──────────────┐
@@ -508,7 +518,7 @@ Canvas 右上の 🔍 アイコンで展開するサイドパネル。
 
 ---
 
-### タブ 5: 正規化ツール管理
+### タブ 5: 正規化ツール管理 (`NormalizationMetrics`)
 
 `dev` ロールのみ表示。workspace とは無関係のシステムグローバルなツール一覧。
 

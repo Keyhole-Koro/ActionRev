@@ -50,18 +50,49 @@ The core value of the system is the interactive traversal of the knowledge graph
 ```mermaid
 sequenceDiagram
     participant F as Frontend (React Flow)
-    participant B as Backend (GraphService)
-    participant S as Spanner Graph
+    participant G as Backend (GraphService)
+    participant N as Backend (NodeService)
+    participant BQ as BigQuery
+    participant SG as Spanner Graph
 
-    F->>B: GetGraph(workspace_id, document_id)
-    B->>S: Query initial graph for document
-    S-->>B: Nodes & Edges
-    B-->>F: GetGraphResponse (Initial View)
+    F->>G: GetGraph(workspace_id, document_id)
+    G->>BQ: Query document graph
+    BQ-->>G: document nodes/edges (GraphProjectionScope=document)
+    G-->>F: GetGraphResponse (BaseGraphLayer)
     
-    Note over F, S: User clicks a node to expand
+    Note over F, SG: User expands neighbors or searches paths on canonical graph
     
-    F->>B: ExpandNeighbors(node_id, depth, edge_types)
-    B->>S: Traversal query (GQL)
-    S-->>B: Subgraph (Adjacent nodes/edges)
-    B-->>F: ExpandNeighborsResponse (Merged into View)
+    F->>G: ExpandNeighbors(seed_node_id, depth, edge_types)
+    G->>SG: Traversal query
+    SG-->>G: canonical subgraph (GraphProjectionScope=canonical)
+    G-->>F: ExpandNeighborsResponse (ExpandedGraphLayer)
+
+    F->>G: FindPaths(source_node_id, target_node_id)
+    G->>SG: Path query
+    SG-->>G: paths + PathEvidenceRef
+    G-->>F: FindPathsResponse (PathOverlayLayer)
+
+    F->>N: GetGraphEntityDetail(target_ref)
+    N->>BQ: Load source chunks / supporting edges / representative nodes
+    BQ-->>N: GraphEntityDetail evidence
+    N-->>F: GetGraphEntityDetailResponse
+```
+
+## 4. Monitoring and Metrics Families
+
+`/dev/stats` is organized by metrics family so the UI, RPCs, and stored aggregates use the same vocabulary.
+
+```mermaid
+flowchart LR
+    A[/dev/stats/] --> B[PipelineMetrics]
+    A --> C[ExtractionMetrics]
+    A --> D[EvaluationMetrics]
+    A --> E[ErrorMetrics]
+    A --> F[NormalizationMetrics]
+
+    B --> B1[GetPipelineStats]
+    C --> C1[GetExtractionStats]
+    D --> D1[GetEvaluationTrend]
+    E --> E1[ListFailedDocuments]
+    F --> F1[ListNormalizationTools / GetNormalizationToolRun]
 ```
