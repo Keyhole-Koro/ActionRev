@@ -49,6 +49,7 @@ message StartProcessingRequest {
   // The target document must already be uploaded and currently be in uploaded status.
   string document_id = 1;
   bool force_reprocess = 2;
+  ExtractionDepth extraction_depth = 3;
 }
 
 message StartProcessingResponse {
