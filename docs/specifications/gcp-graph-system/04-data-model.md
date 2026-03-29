@@ -113,7 +113,7 @@ Workspace
 | label | STRING | 表示ラベル |
 | level | INT64 | 階層レベル（0=ドメイン / 1=概念 / 2=施策・アクション / 3=詳細） |
 | category | STRING | ノードカテゴリ（`concept` / `entity` / `claim` / `evidence` / `counter`） |
-| entity_type | STRING | エンティティ種別（category=entity のみ: `organization` / `person` / `metric` / `date`） |
+| entity_type | STRING | エンティティ種別（category=entity のみ: `organization` / `person` / `metric` / `date` / `location`） |
 | description | STRING | ノード説明 |
 | summary_html | STRING | ノードサマリの HTML（構造タグのみ、CSS はアプリ側注入）。null の場合は description にフォールバック |
 | source_chunk_id | STRING | 出典 chunk |
@@ -162,8 +162,6 @@ Workspace
 - `causes` : concept が別の concept を引き起こす
 - `exemplifies` : 上位概念の具体例
 
-> `abstract_to_concrete` は deprecated。新規データには `hierarchical` または `exemplifies` を使用する。
-
 ## Future Tables
 
 ### node_aliases
@@ -181,13 +179,13 @@ Workspace
 
 ### document_topic_mappings
 
-ドキュメントとトピック（abstract ノード）の対応関係を保存する。詳細は [10-topic-mapping.md](10-topic-mapping.md) を参照。
+ドキュメントとトピック（`category=concept` かつ `level in (0, 1)` の canonical ノード）の対応関係を保存する。詳細は [10-topic-mapping.md](10-topic-mapping.md) を参照。
 
 | Column | Type | Description |
 | --- | --- | --- |
 | mapping_id | STRING | マッピング識別子 |
 | document_id | STRING | ドキュメント識別子 |
-| topic_node_id | STRING | トピック（abstract ノード）識別子 |
+| topic_node_id | STRING | トピックノード識別子 |
 | confidence | FLOAT64 | 信頼スコア |
 | reason | STRING | LLM による判定理由 |
 | method | STRING | `keyword` / `embedding` / `llm` / `manual` |

@@ -112,13 +112,6 @@ enum DocumentStatus {
   DOCUMENT_STATUS_FAILED = 5;
 }
 
-// Deprecated: abstract/concrete の2値分類は廃止。NodeCategory と level を使用する。
-enum NodeType {
-  NODE_TYPE_UNSPECIFIED = 0;
-  NODE_TYPE_ABSTRACT = 1;
-  NODE_TYPE_CONCRETE = 2;
-}
-
 enum NodeCategory {
   NODE_CATEGORY_UNSPECIFIED = 0;
   NODE_CATEGORY_CONCEPT = 1;
@@ -134,6 +127,7 @@ enum NodeEntityType {
   NODE_ENTITY_TYPE_PERSON = 2;
   NODE_ENTITY_TYPE_METRIC = 3;
   NODE_ENTITY_TYPE_DATE = 4;
+  NODE_ENTITY_TYPE_LOCATION = 5;
 }
 
 enum EdgeType {
@@ -146,8 +140,6 @@ enum EdgeType {
   EDGE_TYPE_INVOLVES = 6;
   EDGE_TYPE_CAUSES = 7;
   EDGE_TYPE_EXEMPLIFIES = 8;
-  // Deprecated
-  EDGE_TYPE_ABSTRACT_TO_CONCRETE = 9;
 }
 
 enum JobType {
