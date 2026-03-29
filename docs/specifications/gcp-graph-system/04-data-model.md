@@ -56,13 +56,14 @@ Workspace
 | --- | --- | --- |
 | workspace_id | STRING | ワークスペース識別子 |
 | user_id | STRING | メンバーのユーザーID |
-| role | STRING | `editor` / `viewer` |
+| role | STRING | `editor` / `viewer` / `dev` |
 | invited_at | TIMESTAMP | 招待日時 |
 
 #### Role Values
 
 - `editor` : ドキュメントのアップロード・削除・処理実行が可能
 - `viewer` : グラフの閲覧のみ可能
+- `dev` : `/dev/stats` アクセス可能（editor/viewer に追加付与）
 
 ### documents
 
@@ -218,7 +219,7 @@ Workspace
 
 | Column | Type | Description |
 | --- | --- | --- |
-| plan | STRING | `free` / `pro` / `enterprise` |
+| plan | STRING | `free` / `pro` |
 | storage_quota_bytes | INT64 | ストレージ上限 |
 | max_file_size_bytes | INT64 | 1ファイルあたりの上限サイズ |
 | max_uploads_per_day | INT64 | 1日あたりのアップロード上限 |
@@ -229,8 +230,8 @@ Workspace
 
 | | free | pro |
 | --- | --- | --- |
-| storage_quota_bytes | 1GB | 20GB |
-| max_file_size_bytes | 10MB | 200MB |
+| storage_quota_bytes | 1GB | 50GB |
+| max_file_size_bytes | 50MB | 500MB |
 | max_uploads_per_day | 10 | 200 |
 | max_members | 3 | 20 |
 | allowed_extraction_depths | `summary` | `full,summary` |

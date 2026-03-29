@@ -166,14 +166,7 @@ Discord の Incoming Webhook を使って管理者チャンネルに通知する
 
 ## Authentication Policy
 
-### 初期（MVP）
-
-- 認証なし。GCP IAM によるサービス間アクセス制御のみ
-- Cloud Run エンドポイントは内部ネットワークまたは固定 IP からのアクセスに限定する
-
-### β公開前
-
-- **Firebase Auth + Google OAuth** を導入する（Firebase Hosting との親和性が高い）
+- **Firebase Auth + Google OAuth** を採用する（Firebase Hosting との親和性が高い）
 - フロントエンドで Google ログインを要求し、ID トークンを Connect RPC のヘッダに付与する
 - バックエンドでトークンを検証し、未認証リクエストを拒否する
 - アクセス制御は workspace + role ベースで行う（詳細は下記）
@@ -181,7 +174,7 @@ Discord の Incoming Webhook を使って管理者チャンネルに通知する
 ### Workspace とロール
 
 - ユーザーは1つ以上の workspace に所属する
-- workspace 内のロールは `editor` / `viewer` の2種
+- workspace 内のロールは `editor` / `viewer` / `dev` の3種
 - `/dev/stats` は Firebase Auth カスタムクレーム `role: "dev"` を持つユーザーのみアクセス可能
 
 | ロール | 権限 |
@@ -220,7 +213,7 @@ push to main:
 ```
 PR 作成時:
   1. buf lint（proto の文法・スタイル検査）
-  2. buf breaking（後方互換性チェック）
+  # breaking change check は API が安定したら追加する
 
 push to main:
   1. buf generate（Go / TypeScript コード生成）
@@ -231,15 +224,15 @@ push to main:
 
 ```
 毎週月曜 0:00:
-  1. gold document セットを使い抽出パイプラインを実行（Gemini モック）
+  1. gold document セットを使い抽出パイプラインを実行（Gemini キャッシュ: GEMINI_CACHE_ENABLED=true）
   2. 指標（Precision / Recall / level 一致率）を BigQuery に記録
-  3. 前週比で 5% 以上劣化した場合に Slack 通知
+  3. 前週比で 5% 以上劣化した場合に Discord 通知
 ```
 
 ---
 
-## Open Issues
+## Resolved Decisions
 
-- PDF の抽出品質をどのライブラリで担保するか
-- 正規化ツールの approval workflow をどこまで厳密にするか
-- ファイル upload を RPC 本体で扱うか、署名付き URL に切るか
+- PDF 抽出: Gemini File API を使用する
+- 正規化ツール approval: LLM スコア ≥ 0.9 で自動承認、< 0.9 で人間レビュー（Discord 通知）
+- ファイルアップロード: フロントから GCS へ署名付き URL で直接アップロードする
