@@ -104,7 +104,7 @@ Workspace
 
 ### nodes
 
-詳細な抽出戦略は [12-extraction-strategy.md](12-extraction-strategy.md) を参照。
+詳細な抽出戦略は [extraction-strategy.md](../design/extraction-strategy.md) を参照。
 
 `node_id` は表示ラベルや LLM が返す `local_id` から直接導出せず、永続化時にバックエンドがグローバル一意な値を採番する。初期実装では `nd_<ULID>` 形式を推奨する。
 
@@ -144,7 +144,7 @@ Workspace
 
 ### edges
 
-詳細な抽出戦略は [12-extraction-strategy.md](12-extraction-strategy.md) を参照。
+詳細な抽出戦略は [extraction-strategy.md](../design/extraction-strategy.md) を参照。
 
 `edge_id` も `source_node_id` / `target_node_id` / `edge_type` の連結値ではなく、永続化時にバックエンドがグローバル一意な値を採番する。初期実装では `ed_<ULID>` 形式を推奨する。
 
@@ -180,7 +180,7 @@ Workspace
 
 ### node_aliases
 
-トピックのカノニカル化とオントロジー統合に利用する。詳細は [10-topic-mapping.md](10-topic-mapping.md) を参照。
+トピックのカノニカル化とオントロジー統合に利用する。詳細は [topic-mapping.md](topic-mapping.md) を参照。
 
 `canonical_node_id` は文書内 `node_id` とは別の識別空間として扱う。初期実装では `cn_<ULID>` 形式を推奨する。
 
@@ -214,7 +214,7 @@ Workspace
 
 ### document_topic_mappings
 
-ドキュメントとトピック（`category=concept` かつ `level in (0, 1)` の canonical ノード）の対応関係を保存する。詳細は [10-topic-mapping.md](10-topic-mapping.md) を参照。
+ドキュメントとトピック（`category=concept` かつ `level in (0, 1)` の canonical ノード）の対応関係を保存する。詳細は [topic-mapping.md](topic-mapping.md) を参照。
 
 | Column | Type | Description |
 | --- | --- | --- |
@@ -228,7 +228,7 @@ Workspace
 
 ### node_scores
 
-グラフアルゴリズムの計算結果を保存する。詳細は [11-graph-algorithms.md](11-graph-algorithms.md) を参照。
+グラフアルゴリズムの計算結果を保存する。詳細は [graph-algorithms.md](../design/graph-algorithms.md) を参照。
 
 | Column | Type | Description |
 | --- | --- | --- |

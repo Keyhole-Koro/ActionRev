@@ -350,7 +350,7 @@ Layer 3 は初期から注入する。関連性が低いコンテキストはノ
 - semantic error とは、JSON としては読めるが schema・enum・参照整合性・level 制約を満たさない状態を指す
 - `documents.status` を `failed` に更新し、失敗理由をログに記録する
 - 再処理は `StartProcessing` の `force_reprocess=true` で対応する
-- 評価データ（[13-evaluation-data.md](13-evaluation-data.md)）を使った品質劣化検知で根本原因を特定する
+- 評価データ（[evaluation-data.md](../quality/evaluation-data.md)）を使った品質劣化検知で根本原因を特定する
 
 ### JSON Repair の対象範囲
 

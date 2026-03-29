@@ -8,7 +8,7 @@
 - 契約定義は `Protocol Buffers` で管理する
 - 外部公開 REST API は初期スコープに含めない
 - 重い処理は RPC からジョブを起動し、完了確認は status 取得 RPC で行う
-- proto の叩き台は [proto/README.md](/home/unix/ActionRev/initial-specs/specifications/gcp-graph-system/proto/README.md) を参照する
+- proto の叩き台は [proto/README.md](proto/README.md) を参照する
 
 ## Services
 
@@ -278,7 +278,7 @@ document の解析を開始する。
 
 ### ToolService
 
-`dev` ロールを持つ管理者のみアクセス可能。workspace とは無関係のシステムグローバルなツール管理 API。詳細は [09-normalization-tools.md](09-normalization-tools.md) を参照。
+`dev` ロールを持つ管理者のみアクセス可能。workspace とは無関係のシステムグローバルなツール管理 API。詳細は [normalization-tools.md](../design/normalization-tools.md) を参照。
 
 #### GenerateNormalizationTool
 

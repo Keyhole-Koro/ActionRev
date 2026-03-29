@@ -2,25 +2,45 @@
 
 ## Overview
 
-このディレクトリには ActionRev の GCP ベースのグラフ化システム仕様を分割して配置する。
+このディレクトリには ActionRev の GCP ベースのグラフ化システム仕様を配置する。
+論理レベル（なぜ・何）から物理レベル（どう作るか）の順に階層構造で整理している。
 
 ## Document Index
 
-- [01-overview.md](/home/unix/ActionRev/initial-specs/specifications/gcp-graph-system/01-overview.md)
-- [02-requirements.md](/home/unix/ActionRev/initial-specs/specifications/gcp-graph-system/02-requirements.md)
-- [03-architecture.md](/home/unix/ActionRev/initial-specs/specifications/gcp-graph-system/03-architecture.md)
-- [04-data-model.md](/home/unix/ActionRev/initial-specs/specifications/gcp-graph-system/04-data-model.md)
-- [05-api-spec.md](/home/unix/ActionRev/initial-specs/specifications/gcp-graph-system/05-api-spec.md)
-- [06-operations-and-roadmap.md](/home/unix/ActionRev/initial-specs/specifications/gcp-graph-system/06-operations-and-roadmap.md)
-- [08-ai-pipeline.md](/home/unix/ActionRev/initial-specs/specifications/gcp-graph-system/08-ai-pipeline.md)
-- [09-normalization-tools.md](/home/unix/ActionRev/initial-specs/specifications/gcp-graph-system/09-normalization-tools.md)
-- [10-topic-mapping.md](/home/unix/ActionRev/initial-specs/specifications/gcp-graph-system/10-topic-mapping.md)
-- [11-graph-algorithms.md](/home/unix/ActionRev/initial-specs/specifications/gcp-graph-system/11-graph-algorithms.md)
-- [12-extraction-strategy.md](/home/unix/ActionRev/initial-specs/specifications/gcp-graph-system/12-extraction-strategy.md)
-- [13-evaluation-data.md](/home/unix/ActionRev/initial-specs/specifications/gcp-graph-system/13-evaluation-data.md)
-- [14-testing-strategy.md](/home/unix/ActionRev/initial-specs/specifications/gcp-graph-system/14-testing-strategy.md)
-- [15-frontend-spec.md](/home/unix/ActionRev/initial-specs/specifications/gcp-graph-system/15-frontend-spec.md)
-- [proto/README.md](/home/unix/ActionRev/initial-specs/specifications/gcp-graph-system/proto/README.md)
+### product/ — なぜ作るか・何を作るか
+
+- [overview.md](product/overview.md)
+- [requirements.md](product/requirements.md)
+- [roadmap.md](product/roadmap.md)
+
+### domain/ — ドメイン概念・データモデル
+
+- [data-model.md](domain/data-model.md)
+- [topic-mapping.md](domain/topic-mapping.md)
+
+### design/ — 機能別設計
+
+- [architecture.md](design/architecture.md)
+- [ai-pipeline.md](design/ai-pipeline.md)
+- [extraction-strategy.md](design/extraction-strategy.md)
+- [normalization-tools.md](design/normalization-tools.md)
+- [graph-algorithms.md](design/graph-algorithms.md)
+- [frontend.md](design/frontend.md)
+
+### contract/ — API・インターフェース契約
+
+- [api-spec.md](contract/api-spec.md)
+- [proto/README.md](contract/proto/README.md)
+
+### implementation/ — 物理実装構造
+
+- [backend-structure.md](implementation/backend-structure.md)
+
+### quality/ — テスト・評価・運用
+
+- [testing-strategy.md](quality/testing-strategy.md)
+- [evaluation-data.md](quality/evaluation-data.md)
+- [operations.md](quality/operations.md)
 
 ## Document Control
 
@@ -28,7 +48,7 @@
 | --- | --- |
 | Document name | GCP Graph System Specification |
 | System name | ActionRev |
-| Version | 0.2 |
+| Version | 0.3 |
 | Status | Draft |
-| Last updated | 2026-03-24 |
+| Last updated | 2026-03-29 |
 | Scope | Initial release and planned extensions |
