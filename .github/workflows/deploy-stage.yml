@@ -1,0 +1,93 @@
+name: Deploy (stage)
+
+on:
+  workflow_call:
+    inputs:
+      image_tag:
+        required: true
+        type: string
+  # 手動で stage に再デプロイしたい場合
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag (e.g. sha-abc1234 or latest)"
+        required: true
+        default: "latest"
+
+env:
+  REGION: asia-northeast1
+  AR_REPO: actionrev
+  ENV: stage
+
+jobs:
+  deploy-stage:
+    name: Deploy to stage
+    runs-on: ubuntu-latest
+    environment: stage   # GitHub Environment (ブランチ保護・シークレット分離)
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_STAGE }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.7"
+
+      # --- Terraform: インフラ変更がある場合のみ apply ---
+      - name: Check infra changes
+        id: infra-diff
+        run: |
+          git fetch origin main --depth=2
+          if git diff --name-only HEAD^ HEAD | grep -q '^infra/terraform/'; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Terraform init
+        if: steps.infra-diff.outputs.changed == 'true'
+        working-directory: infra/terraform
+        run: terraform init -backend-config=backends/stage.hcl
+
+      - name: Terraform apply (stage)
+        if: steps.infra-diff.outputs.changed == 'true'
+        working-directory: infra/terraform
+        run: |
+          terraform apply -auto-approve \
+            -var-file=envs/stage.tfvars \
+            -var="backend_image=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/backend:${{ inputs.image_tag }}"
+
+      # --- Cloud Run: アプリデプロイ ---
+      - name: Deploy backend to Cloud Run
+        run: |
+          gcloud run deploy actionrev-backend-stage \
+            --image="${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/backend:${{ inputs.image_tag }}" \
+            --region="${{ env.REGION }}" \
+            --project="${{ secrets.GCP_PROJECT_ID_STAGE }}" \
+            --quiet
+
+      - name: Notify Discord (deploy success)
+        if: success()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -s -X POST "$DISCORD_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "{\"content\":\"✅ stage デプロイ完了: \`${{ inputs.image_tag }}\` by ${{ github.actor }}\"}"
+
+      - name: Notify Discord (deploy failure)
+        if: failure()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -s -X POST "$DISCORD_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "{\"content\":\"❌ stage デプロイ失敗: \`${{ inputs.image_tag }}\` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"

@@ -141,21 +141,27 @@ document の解析を開始する。
 
 ### ToolService
 
+`dev` ロールを持つ管理者のみアクセス可能。workspace とは無関係のシステムグローバルなツール管理 API。詳細は [09-normalization-tools.md](09-normalization-tools.md) を参照。
+
 #### GenerateNormalizationTool
 
-入力データの問題説明やサンプルをもとに、LLM から Python 正規化ツール案を生成する。
+問題パターンの説明やサンプルデータをもとに、LLM から Python 正規化スクリプト案を生成する。
 
 #### SaveNormalizationTool
 
-生成された Python スクリプトを manifest とともに保存する。
+生成されたスクリプトを `problem_pattern` と manifest とともに保存する（`draft` 状態）。
 
 #### ListNormalizationTools
 
-利用可能な正規化ツール一覧を取得する。
+正規化ツール一覧を取得する。`approval_status` でフィルタ可能。
+
+#### UpdateNormalizationToolStatus
+
+ツールの状態を遷移させる（`draft` → `reviewed` → `approved` / `deprecated`）。`approved` 状態のみ本番適用可能。
 
 #### RunNormalizationTool
 
-ツールをサンドボックスで dry-run または本実行する。
+ツールをサンドボックスで dry-run または本実行する。`APPLY` モードは `approved` のツールのみ実行可能。
 
 #### GetNormalizationToolRun
 

@@ -2,11 +2,76 @@
 
 ## Tables
 
+### users
+
+Firebase Auth でログインした際に初回のみ自動作成する。
+
+| Column | Type | Description |
+| --- | --- | --- |
+| user_id | STRING | Firebase Auth UID |
+| email | STRING | メールアドレス |
+| display_name | STRING | 表示名 |
+| created_at | TIMESTAMP | 初回ログイン日時 |
+| last_login_at | TIMESTAMP | 最終ログイン日時 |
+
+### user と workspace の関係
+
+```
+User
+  │ 1
+  │ ├─ 複数の workspace を作成できる（owner）
+  │ │      workspaces.owner_id = user_id
+  │ │
+  │ └─ 複数の workspace にメンバーとして参加できる
+  │        workspace_members.user_id = user_id
+  │ *
+Workspace
+  │ 1
+  └─ 複数の document を持つ
+         documents.workspace_id = workspace_id
+```
+
+- 1ユーザーは複数の workspace を作成できる
+- 1ユーザーは複数の workspace にメンバーとして参加できる
+- 1つの workspace は複数の document を持つ
+- workspace の作成者は自動で `editor` として `workspace_members` に登録される
+
+### workspaces
+
+| Column | Type | Description |
+| --- | --- | --- |
+| workspace_id | STRING | ワークスペース識別子 |
+| name | STRING | ワークスペース名 |
+| owner_id | STRING | オーナーのユーザーID（Firebase Auth UID） |
+| plan | STRING | `free` / `pro` |
+| stripe_customer_id | STRING | Stripe の顧客ID |
+| stripe_subscription_id | STRING | Stripe のサブスクリプションID |
+| storage_used_bytes | INT64 | 使用済みストレージ容量 |
+| created_at | TIMESTAMP | 作成日時 |
+| updated_at | TIMESTAMP | 更新日時 |
+
+### workspace_members
+
+| Column | Type | Description |
+| --- | --- | --- |
+| workspace_id | STRING | ワークスペース識別子 |
+| user_id | STRING | メンバーのユーザーID |
+| role | STRING | `editor` / `viewer` / `dev` |
+| invited_at | TIMESTAMP | 招待日時 |
+
+#### Role Values
+
+- `editor` : ドキュメントのアップロード・削除・処理実行が可能
+- `viewer` : グラフの閲覧のみ可能
+- `dev` : `/dev/stats` アクセス可能（editor/viewer に追加付与）
+
 ### documents
 
 | Column | Type | Description |
 | --- | --- | --- |
 | document_id | STRING | ドキュメント識別子 |
+| workspace_id | STRING | 所属ワークスペース識別子 |
+| uploaded_by | STRING | アップロードしたユーザーID |
 | filename | STRING | 元ファイル名 |
 | gcs_uri | STRING | 保存先 URI |
 | mime_type | STRING | MIME type |
@@ -19,6 +84,7 @@
 #### Status Values
 
 - `uploaded` : メタデータ登録とファイル upload 完了後、解析開始前
+- `pending_normalization` : 正規化ツールの承認待ちで処理を停止中
 - `processing`
 - `completed`
 - `failed`
@@ -145,9 +211,45 @@
 
 - 再処理前後の結果比較に利用する
 
+### plans
+
+プランごとの制限値を管理する設定テーブル。
+
+| Column | Type | Description |
+| --- | --- | --- |
+| plan | STRING | `free` / `pro` |
+| storage_quota_bytes | INT64 | ストレージ上限 |
+| max_file_size_bytes | INT64 | 1ファイルあたりの上限サイズ |
+| max_uploads_per_day | INT64 | 1日あたりのアップロード上限 |
+| max_members | INT64 | workspace メンバー上限 |
+| allowed_extraction_depths | STRING | 使用可能な extraction_depth（カンマ区切り） |
+
+#### デフォルト値
+
+| | free | pro |
+| --- | --- | --- |
+| storage_quota_bytes | 1GB | 50GB |
+| max_file_size_bytes | 50MB | 500MB |
+| max_uploads_per_day | 10 | 200 |
+| max_members | 3 | 20 |
+| allowed_extraction_depths | `summary` | `full,summary` |
+
 ### normalization_tools
 
-- LLM または人手で作成した正規化ツールの定義保存に利用する
+| Column | Type | Description |
+| --- | --- | --- |
+| tool_id | STRING | ツール識別子 |
+| name | STRING | ツール名 |
+| version | STRING | バージョン |
+| description | STRING | 説明 |
+| problem_pattern | STRING | 対処する問題パターン（自動マッチング用） |
+| approval_status | STRING | `draft` / `reviewed` / `approved` / `deprecated` |
+| approved_by | STRING | `llm` / `human` |
+| llm_review_score | FLOAT64 | LLM 自動レビューの信頼スコア（0〜1） |
+| llm_review_reason | STRING | LLM の判定理由 |
+| created_by | STRING | 作成者ユーザーID |
+| created_at | TIMESTAMP | 作成日時 |
+| updated_at | TIMESTAMP | 更新日時 |
 
 ### normalization_tool_runs
 

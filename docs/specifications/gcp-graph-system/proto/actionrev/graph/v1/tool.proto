@@ -6,10 +6,12 @@ option go_package = "github.com/actionrev/backend/gen/actionrev/graph/v1;graphv1
 
 import "actionrev/graph/v1/common.proto";
 
+// ToolService は dev ロールを持つ管理者のみアクセス可能
 service ToolService {
   rpc GenerateNormalizationTool(GenerateNormalizationToolRequest) returns (GenerateNormalizationToolResponse);
   rpc SaveNormalizationTool(SaveNormalizationToolRequest) returns (SaveNormalizationToolResponse);
   rpc ListNormalizationTools(ListNormalizationToolsRequest) returns (ListNormalizationToolsResponse);
+  rpc UpdateNormalizationToolStatus(UpdateNormalizationToolStatusRequest) returns (UpdateNormalizationToolStatusResponse);
   rpc RunNormalizationTool(RunNormalizationToolRequest) returns (RunNormalizationToolResponse);
   rpc GetNormalizationToolRun(GetNormalizationToolRunRequest) returns (GetNormalizationToolRunResponse);
 }
@@ -30,8 +32,18 @@ message SaveNormalizationToolRequest {
   string name = 1;
   string version = 2;
   string description = 3;
-  string code = 4;
-  string manifest = 5;
+  string problem_pattern = 4; // 自動マッチングに使用する問題パターンの説明
+  string code = 5;
+  string manifest = 6;
+}
+
+message UpdateNormalizationToolStatusRequest {
+  string tool_id = 1;
+  ToolApprovalStatus status = 2;
+}
+
+message UpdateNormalizationToolStatusResponse {
+  NormalizationTool tool = 1;
 }
 
 message SaveNormalizationToolResponse {

@@ -1,0 +1,134 @@
+syntax = "proto3";
+
+package actionrev.graph.v1;
+
+option go_package = "github.com/actionrev/backend/gen/actionrev/graph/v1;graphv1";
+
+import "actionrev/graph/v1/common.proto";
+
+service WorkspaceService {
+  rpc CreateWorkspace(CreateWorkspaceRequest) returns (CreateWorkspaceResponse);
+  rpc GetWorkspace(GetWorkspaceRequest) returns (GetWorkspaceResponse);
+  rpc ListWorkspaces(ListWorkspacesRequest) returns (ListWorkspacesResponse);
+  rpc InviteMember(InviteMemberRequest) returns (InviteMemberResponse);
+  rpc UpdateMemberRole(UpdateMemberRoleRequest) returns (UpdateMemberRoleResponse);
+  rpc RemoveMember(RemoveMemberRequest) returns (RemoveMemberResponse);
+  rpc GetUploadURL(GetUploadURLRequest) returns (GetUploadURLResponse);
+}
+
+service BillingService {
+  rpc CreateCheckoutSession(CreateCheckoutSessionRequest) returns (CreateCheckoutSessionResponse);
+  rpc CreatePortalSession(CreatePortalSessionRequest) returns (CreatePortalSessionResponse);
+}
+
+message CreateCheckoutSessionRequest {
+  string workspace_id = 1;
+}
+
+message CreateCheckoutSessionResponse {
+  string checkout_url = 1;
+}
+
+message CreatePortalSessionRequest {
+  string workspace_id = 1;
+}
+
+message CreatePortalSessionResponse {
+  string portal_url = 1;
+}
+
+message Workspace {
+  string workspace_id = 1;
+  string name = 2;
+  string owner_id = 3;
+  WorkspacePlan plan = 4;
+  int64 storage_used_bytes = 5;
+  int64 storage_quota_bytes = 6;  // plans テーブルから取得して返す
+  int64 max_file_size_bytes = 7;
+  int64 max_uploads_per_day = 8;
+  string created_at = 9;
+}
+
+enum WorkspacePlan {
+  WORKSPACE_PLAN_UNSPECIFIED = 0;
+  WORKSPACE_PLAN_FREE = 1;
+  WORKSPACE_PLAN_PRO = 2;
+}
+
+message WorkspaceMember {
+  string user_id = 1;
+  string email = 2;
+  WorkspaceRole role = 3;
+  string invited_at = 4;
+}
+
+enum WorkspaceRole {
+  WORKSPACE_ROLE_UNSPECIFIED = 0;
+  WORKSPACE_ROLE_EDITOR = 1;
+  WORKSPACE_ROLE_VIEWER = 2;
+  WORKSPACE_ROLE_DEV = 3; // /dev/stats アクセス可能
+}
+
+message CreateWorkspaceRequest {
+  string name = 1;
+}
+
+message CreateWorkspaceResponse {
+  Workspace workspace = 1;
+}
+
+message GetWorkspaceRequest {
+  string workspace_id = 1;
+}
+
+message GetWorkspaceResponse {
+  Workspace workspace = 1;
+  repeated WorkspaceMember members = 2;
+}
+
+message ListWorkspacesRequest {}
+
+message ListWorkspacesResponse {
+  repeated Workspace workspaces = 1;
+}
+
+message InviteMemberRequest {
+  string workspace_id = 1;
+  string email = 2;
+  WorkspaceRole role = 3;
+}
+
+message InviteMemberResponse {
+  WorkspaceMember member = 1;
+}
+
+message UpdateMemberRoleRequest {
+  string workspace_id = 1;
+  string user_id = 2;
+  WorkspaceRole role = 3;
+}
+
+message UpdateMemberRoleResponse {
+  WorkspaceMember member = 1;
+}
+
+message RemoveMemberRequest {
+  string workspace_id = 1;
+  string user_id = 2;
+}
+
+message RemoveMemberResponse {}
+
+// 署名付き URL の発行
+message GetUploadURLRequest {
+  string workspace_id = 1;
+  string filename = 2;
+  string mime_type = 3;
+  int64 file_size = 4;
+}
+
+message GetUploadURLResponse {
+  string upload_url = 1;      // GCS 署名付き PUT URL（有効期限15分）
+  string upload_token = 2;    // CreateDocument に渡すトークン
+  string expires_at = 3;
+}

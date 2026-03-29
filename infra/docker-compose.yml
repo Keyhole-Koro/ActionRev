@@ -1,0 +1,75 @@
+version: "3.9"
+
+# ローカル開発環境 (エミュレータ群)
+# バックエンドは実装開始時に追加する
+
+services:
+  # ---------------------------------------------------------------------------
+  # Cloud Storage エミュレータ
+  # GCS 署名付き URL の発行も対応 (fake-gcs-server >= 1.45)
+  # ---------------------------------------------------------------------------
+  fake-gcs:
+    image: fsouza/fake-gcs-server:1.49
+    ports:
+      - "4443:4443"
+    command:
+      - -scheme=http
+      - -port=4443
+      - -public-host=fake-gcs:4443
+      - -backend=memory
+    volumes:
+      - fake-gcs-data:/storage
+    networks:
+      - actionrev
+
+  # ---------------------------------------------------------------------------
+  # BigQuery エミュレータ
+  # REST API (9050) + Storage API (9060) を公開
+  # ---------------------------------------------------------------------------
+  bigquery-emulator:
+    image: ghcr.io/goccy/bigquery-emulator:0.6
+    ports:
+      - "9050:9050"
+      - "9060:9060"
+    command:
+      - --project=actionrev-local
+      - --dataset=graph
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - -qO-
+        - "http://localhost:9050/bigquery/v2/projects/actionrev-local/datasets"
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    networks:
+      - actionrev
+
+  # ---------------------------------------------------------------------------
+  # Firebase Auth エミュレータ
+  # firebase.json はリポジトリルートに配置する
+  # ---------------------------------------------------------------------------
+  firebase-emulator:
+    image: andreysenov/firebase-tools:latest
+    ports:
+      - "9099:9099"   # Auth emulator
+      - "4000:4000"   # Emulator UI
+    command: >
+      firebase emulators:start --only auth --project actionrev-local
+    environment:
+      FIREBASE_TOKEN: "local"
+    volumes:
+      - ../firebase.json:/home/node/firebase.json:ro
+      - firebase-emulator-data:/home/node/.cache/firebase
+    working_dir: /home/node
+    networks:
+      - actionrev
+
+volumes:
+  fake-gcs-data:
+  firebase-emulator-data:
+
+networks:
+  actionrev:
+    driver: bridge

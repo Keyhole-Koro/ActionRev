@@ -1,0 +1,79 @@
+name: Build
+
+# バックエンド・サンドボックスの Dockerfile が追加されたら有効化する
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGION: asia-northeast1
+  AR_REPO: actionrev
+
+jobs:
+  build:
+    name: Build & push Docker images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    outputs:
+      image_tag: ${{ steps.tag.outputs.tag }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_STAGE }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Determine image tag
+        id: tag
+        run: echo "tag=sha-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      # backend/Dockerfile・sandbox/Dockerfile 追加時にコメントを外す
+
+      # - name: Build backend image
+      #   uses: docker/build-push-action@v6
+      #   with:
+      #     context: backend
+      #     file: backend/Dockerfile
+      #     push: true
+      #     tags: |
+      #       ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/backend:${{ steps.tag.outputs.tag }}
+      #       ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/backend:latest
+      #     cache-from: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/backend:cache
+      #     cache-to: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/backend:cache,mode=max
+
+      # - name: Build sandbox image
+      #   uses: docker/build-push-action@v6
+      #   with:
+      #     context: sandbox
+      #     file: sandbox/Dockerfile
+      #     push: true
+      #     tags: |
+      #       ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/sandbox:${{ steps.tag.outputs.tag }}
+      #       ${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/sandbox:latest
+      #     cache-from: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/sandbox:cache
+      #     cache-to: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_STAGE }}/${{ env.AR_REPO }}/sandbox:cache,mode=max
+
+      - name: Placeholder
+        run: echo "No Dockerfiles yet. Add backend/ and sandbox/ to enable builds."
+
+  trigger-deploy-stage:
+    name: Trigger stage deploy
+    needs: [build]
+    uses: ./.github/workflows/deploy-stage.yml
+    with:
+      image_tag: ${{ needs.build.outputs.image_tag }}
+    secrets: inherit

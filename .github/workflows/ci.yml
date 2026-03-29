@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Proto: lint
+  # breaking change check は API が安定したら追加する
+  # ---------------------------------------------------------------------------
+  proto:
+    name: Proto lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: bufbuild/buf-action@v1
+        with:
+          input: docs/specifications/gcp-graph-system/proto
+          lint: true
+
+  # ---------------------------------------------------------------------------
+  # Terraform: format check
+  # ---------------------------------------------------------------------------
+  terraform-fmt:
+    name: Terraform fmt
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.7"
+
+      - name: Format check
+        run: terraform fmt -check -recursive
+        working-directory: infra/terraform

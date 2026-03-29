@@ -1,0 +1,5 @@
+variable "project_id"             { type = string }
+variable "region"                 { type = string }
+variable "env"                    { type = string }
+variable "labels"                 { type = map(string) }
+variable "sandbox_sa_email"       { type = string }
