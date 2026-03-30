@@ -6,12 +6,23 @@ export type GraphCanvasNodeData = {
   category: string
   level: number
   description: string
+  documentId: string | null
+  scope: string
+  sourceChunkIds: string[]
+  expanded?: boolean
+  sourceDocuments?: Array<{
+    id: string
+    filename: string
+    status: string
+  }>
 }
 
 export type GraphCanvas = {
   nodes: Node<GraphCanvasNodeData>[]
   edges: Edge[]
 }
+
+export type GraphCanvasSourceDocument = NonNullable<GraphCanvasNodeData['sourceDocuments']>[number]
 
 export type LoadedGraph = {
   graph: Graph

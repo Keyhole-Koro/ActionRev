@@ -1,13 +1,77 @@
 'use client'
 
+import type { Node, NodeMouseHandler, NodeProps } from '@xyflow/react'
 import { Background, Controls, MiniMap, ReactFlow } from '@xyflow/react'
-import type { GraphCanvas } from '../types/graph-canvas'
+import type { GraphCanvas, GraphCanvasNodeData } from '../types/graph-canvas'
+
+function GraphCanvasNode({ data }: NodeProps<Node<GraphCanvasNodeData>>) {
+  return (
+    <div className="rounded-[24px] bg-white/92 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-slate-900">{data.label}</p>
+          <p className="mt-1 text-xs text-slate-400">
+            {data.category} · {data.scope} · L{data.level}
+          </p>
+        </div>
+      </div>
+
+      {data.expanded && (
+        <div className="mt-4 space-y-4 border-t border-slate-100 pt-4">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              Description
+            </p>
+            <p className="mt-2 text-xs leading-6 text-slate-600">{data.description || 'No description.'}</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="rounded-xl bg-slate-50 px-3 py-2">
+              <p className="text-slate-400">Chunks</p>
+              <p className="mt-1 font-medium text-slate-700">{data.sourceChunkIds.length}</p>
+            </div>
+            <div className="rounded-xl bg-slate-50 px-3 py-2">
+              <p className="text-slate-400">Sources</p>
+              <p className="mt-1 font-medium text-slate-700">{data.sourceDocuments?.length ?? 0}</p>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              Source Documents
+            </p>
+            <div className="mt-2 space-y-2">
+              {data.sourceDocuments?.length ? (
+                data.sourceDocuments.map((document) => (
+                  <div key={document.id} className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="truncate text-xs font-medium text-slate-700">{document.filename}</p>
+                      <span className="text-[11px] text-slate-400">{document.status}</span>
+                    </div>
+                    <p className="mt-1 text-[11px] text-slate-400">{document.id}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-slate-400">No source documents linked.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+const nodeTypes = {
+  graphNode: GraphCanvasNode,
+}
 
 type GraphCanvasPanelProps = {
   canvas: GraphCanvas | null
   isLoading: boolean
   error: string | null
   emptyMessage?: string
+  onNodeSelect?: NodeMouseHandler
 }
 
 export function GraphCanvasPanel({
@@ -15,6 +79,7 @@ export function GraphCanvasPanel({
   isLoading,
   error,
   emptyMessage = 'No graph data.',
+  onNodeSelect,
 }: GraphCanvasPanelProps) {
   return (
     <div className="absolute inset-0">
@@ -23,8 +88,10 @@ export function GraphCanvasPanel({
           fitView
           nodes={canvas.nodes}
           edges={canvas.edges}
+          nodeTypes={nodeTypes}
           proOptions={{ hideAttribution: true }}
           defaultEdgeOptions={{ zIndex: 1 }}
+          onNodeClick={onNodeSelect}
         >
           <MiniMap
             pannable

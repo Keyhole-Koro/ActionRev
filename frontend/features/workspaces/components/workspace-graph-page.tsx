@@ -2,8 +2,10 @@
 
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
+import type { NodeMouseHandler } from '@xyflow/react'
 import { GraphCanvasPanel } from '@/features/graph/components/graph-canvas-panel'
 import { useGetGraph } from '@/features/graph/hooks/use-get-graph'
+import { toGraphCanvas } from '@/features/graph/model/to-graph-canvas'
 import {
   getWorkspaceCard,
   getWorkspaceDocuments,
@@ -28,6 +30,7 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [graphRefreshKey, setGraphRefreshKey] = useState(0)
+  const [expandedNodeIds, setExpandedNodeIds] = useState<string[]>([])
   const nameInputRef = useRef<HTMLInputElement | null>(null)
   const renameInFlightRef = useRef(false)
   const uploadInFlightRef = useRef(false)
@@ -88,6 +91,41 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
   })
   const combinedError = pageError ?? error
   const emptyMessage = workspace ? 'この workspace にはまだ document がありません。' : 'Workspace not found.'
+  const expandedNodeIdSet = new Set(expandedNodeIds)
+  const sourceDocumentsByNodeId = graph
+    ? Object.fromEntries(
+        graph.graph.nodes.map((node) => {
+          const sourceDocuments = node.documentId
+            ? documents.filter((document) => document.id === node.documentId)
+            : documents
+
+          return [
+            node.id,
+            sourceDocuments.map((document) => ({
+              id: document.id,
+              filename: document.filename,
+              status: document.status,
+            })),
+          ]
+        }),
+      )
+    : {}
+  const expandedCanvas = graph
+    ? toGraphCanvas(graph.graph, {
+        expandedNodeIds: expandedNodeIdSet,
+        sourceDocumentsByNodeId,
+      })
+    : null
+
+  useEffect(() => {
+    if (!graph?.graph.nodes.length) {
+      setExpandedNodeIds([])
+      return
+    }
+
+    const graphNodeIds = new Set(graph.graph.nodes.map((node) => node.id))
+    setExpandedNodeIds((current) => current.filter((nodeId) => graphNodeIds.has(nodeId)))
+  }, [graph])
 
   async function refreshWorkspaceState() {
     if (refreshInFlightRef.current) {
@@ -176,6 +214,12 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
     }
   }
 
+  const handleNodeSelect: NodeMouseHandler = (_, node) => {
+    setExpandedNodeIds((current) =>
+      current.includes(node.id) ? current.filter((nodeId) => nodeId !== node.id) : [...current, node.id],
+    )
+  }
+
   return (
     <div className="relative h-screen bg-white">
       {/* Floating nav */}
@@ -222,6 +266,15 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
           </div>
 
           <div className="flex items-center gap-2">
+            {expandedNodeIds.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setExpandedNodeIds([])}
+                className="rounded-lg border border-slate-200/70 bg-white/80 px-3 py-1.5 text-xs text-slate-500 shadow-sm backdrop-blur-sm transition-colors hover:text-slate-700"
+              >
+                Collapse all
+              </button>
+            )}
             <button
               type="button"
               onClick={() => setIsUploadOpen((open) => !open)}
@@ -242,10 +295,11 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
       {/* Full-screen canvas */}
       <main className="absolute inset-0">
         <GraphCanvasPanel
-          canvas={graph?.canvas ?? null}
+          canvas={expandedCanvas}
           isLoading={isWorkspaceLoading || isLoading}
           error={combinedError}
           emptyMessage={emptyMessage}
+          onNodeSelect={handleNodeSelect}
         />
       </main>
 
