@@ -27,6 +27,7 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
   const [isUploadOpen, setIsUploadOpen] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [graphRefreshKey, setGraphRefreshKey] = useState(0)
   const nameInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
@@ -34,10 +35,7 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
 
     async function load() {
       setIsWorkspaceLoading(true)
-      const [result, workspaceDocuments] = await Promise.all([
-        getWorkspaceCard(workspaceId),
-        getWorkspaceDocuments(workspaceId),
-      ])
+      const [result, workspaceDocuments] = await Promise.all([getWorkspaceCard(workspaceId), getWorkspaceDocuments(workspaceId)])
 
       if (cancelled) {
         return
@@ -58,6 +56,20 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
   }, [workspaceId])
 
   useEffect(() => {
+    if (!documents.some((document) => ['UPLOADED', 'PROCESSING', 'PENDING_NORMALIZATION'].includes(document.statusCode))) {
+      return
+    }
+
+    const intervalId = window.setInterval(() => {
+      void refreshWorkspaceState()
+    }, 1500)
+
+    return () => {
+      window.clearInterval(intervalId)
+    }
+  }, [documents, workspaceId])
+
+  useEffect(() => {
     if (!isEditingName) {
       return
     }
@@ -68,14 +80,20 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
 
   const { graph, isLoading, error } = useGetGraph({
     workspaceId: workspace?.id ?? workspaceId,
-    documentId: workspace?.documentId ?? null,
+    documentId: null,
+    refreshKey: graphRefreshKey,
   })
   const combinedError = pageError ?? error
-  const emptyMessage = workspace?.documentId
-    ? 'No graph data.'
-    : workspace
-      ? 'この workspace にはまだ document がありません。'
-      : 'Workspace not found.'
+  const emptyMessage = workspace ? 'この workspace にはまだ document がありません。' : 'Workspace not found.'
+
+  async function refreshWorkspaceState() {
+    const [result, workspaceDocuments] = await Promise.all([getWorkspaceCard(workspaceId), getWorkspaceDocuments(workspaceId)])
+    setWorkspace(result.workspace)
+    setDraftName(result.workspace?.name ?? '')
+    setDocuments(workspaceDocuments)
+    setPageError(result.error ?? (result.workspace ? null : 'Workspace not found.'))
+    setGraphRefreshKey((value) => value + 1)
+  }
 
   async function commitWorkspaceName() {
     if (!workspace) {
@@ -131,26 +149,10 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
     try {
       setIsUploading(true)
       setPageError(null)
-      const uploadedDocument = await uploadWorkspaceDocument(workspace.id, selectedFile)
-      const [nextWorkspace, nextDocuments] = await Promise.all([
-        getWorkspaceCard(workspace.id),
-        getWorkspaceDocuments(workspace.id),
-      ])
-
-      setWorkspace(nextWorkspace.workspace)
-      setDraftName(nextWorkspace.workspace?.name ?? '')
-      setDocuments(nextDocuments)
+      await uploadWorkspaceDocument(workspace.id, selectedFile)
+      await refreshWorkspaceState()
       setSelectedFile(null)
       setIsUploadOpen(false)
-      if (!nextWorkspace.workspace) {
-        setPageError('Workspace not found.')
-        return
-      }
-
-      setDocuments((currentDocuments) => {
-        const exists = currentDocuments.some((document) => document.id === uploadedDocument.id)
-        return exists ? nextDocuments : [uploadedDocument, ...nextDocuments]
-      })
     } catch (uploadError) {
       setPageError(uploadError instanceof Error ? uploadError.message : String(uploadError))
     } finally {

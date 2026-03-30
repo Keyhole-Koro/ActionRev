@@ -16,16 +16,24 @@ type WorkspaceCardResult = {
 async function toWorkspaceCard(workspace: Workspace): Promise<WorkspaceCard> {
   const documents = await getWorkspaceDocuments(workspace.workspaceId)
   const latestDocument = documents[0] ?? null
+  const processingCount = documents.filter((document) =>
+    ['UPLOADED', 'PENDING_NORMALIZATION', 'PROCESSING'].includes(document.statusCode)
+  ).length
 
   return {
     id: workspace.workspaceId,
     name: workspace.name,
-    summary: latestDocument ? `${latestDocument.filename} · ${latestDocument.status}` : 'まだドキュメントがありません。',
+    summary:
+      documents.length === 0
+        ? 'まだドキュメントがありません。'
+        : processingCount > 0
+          ? `${documents.length} documents · ${processingCount} processing`
+          : `${documents.length} documents integrated`,
     ownerLabel: 'Workspace',
     graphNodeCount: 0,
     graphEdgeCount: 0,
     documentId: latestDocument?.id ?? null,
-    badge: latestDocument?.status ?? 'Empty',
+    badge: processingCount > 0 ? 'Processing' : latestDocument?.status ?? 'Empty',
   }
 }
 
@@ -103,6 +111,7 @@ function mapDocument(document: Document): WorkspaceDocument {
     mimeType: document.mimeType,
     fileSize: Number(document.fileSize),
     status: getDocumentStatusLabel(document.status),
+    statusCode: DocumentLifecycleState[document.status] ?? 'UNSPECIFIED',
   }
 }
 
@@ -124,7 +133,7 @@ export async function uploadWorkspaceDocument(workspaceId: string, file: File) {
     throw new Error('Failed to create document.')
   }
 
-  await documentClient.startProcessing({
+  const processing = await documentClient.startProcessing({
     workspaceId,
     documentId: document.documentId,
     forceReprocess: false,
@@ -133,6 +142,6 @@ export async function uploadWorkspaceDocument(workspaceId: string, file: File) {
 
   return mapDocument({
     ...document,
-    status: DocumentLifecycleState.COMPLETED,
+    status: processing.status,
   })
 }

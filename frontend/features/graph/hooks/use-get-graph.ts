@@ -9,6 +9,7 @@ import type { GraphSummary } from '../types/graph-summary'
 type UseGetGraphOptions = {
   workspaceId: string
   documentId: string | null
+  refreshKey?: number
 }
 
 type UseGetGraphResult = {
@@ -19,7 +20,7 @@ type UseGetGraphResult = {
 }
 
 export function useGetGraph(options: UseGetGraphOptions): UseGetGraphResult {
-  const { workspaceId, documentId } = options
+  const { workspaceId, documentId, refreshKey = 0 } = options
   const [graph, setGraph] = useState<LoadedGraph | null>(null)
   const [summary, setSummary] = useState<GraphSummary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -29,19 +30,11 @@ export function useGetGraph(options: UseGetGraphOptions): UseGetGraphResult {
     let cancelled = false
 
     async function load() {
-      if (!documentId) {
-        setGraph(null)
-        setSummary(null)
-        setError(null)
-        setIsLoading(false)
-        return
-      }
-
       try {
         setIsLoading(true)
         const response = await graphClient.getGraph({
           workspaceId,
-          documentId,
+          documentId: documentId ?? '',
           categoryFilters: [],
           levelFilters: [],
           edgeTypeFilters: [],
@@ -89,7 +82,7 @@ export function useGetGraph(options: UseGetGraphOptions): UseGetGraphResult {
     return () => {
       cancelled = true
     }
-  }, [documentId, workspaceId])
+  }, [documentId, refreshKey, workspaceId])
 
   return { graph, summary, isLoading, error }
 }

@@ -15,4 +15,5 @@ export type WorkspaceDocument = {
   mimeType: string
   fileSize: number
   status: string
+  statusCode: string
 }
