@@ -1,12 +1,24 @@
 'use client'
 
 import type { Node, NodeMouseHandler, NodeProps } from '@xyflow/react'
-import { Background, Controls, MiniMap, ReactFlow } from '@xyflow/react'
+import { Background, Controls, Handle, MiniMap, Position, ReactFlow } from '@xyflow/react'
 import type { GraphCanvas, GraphCanvasNodeData } from '../types/graph-canvas'
 
 function GraphCanvasNode({ data }: NodeProps<Node<GraphCanvasNodeData>>) {
   return (
-    <div className="rounded-[24px] bg-white/92 p-4">
+    <div className="relative rounded-[24px] bg-white/92 p-4">
+      <Handle
+        type="target"
+        position={Position.Left}
+        className="!h-3 !w-3 !border-2 !border-slate-200 !bg-white"
+        style={{ left: -7 }}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        className="!h-3 !w-3 !border-2 !border-slate-200 !bg-white"
+        style={{ right: -7 }}
+      />
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-slate-900">{data.label}</p>

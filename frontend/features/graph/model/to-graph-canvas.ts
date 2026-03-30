@@ -66,6 +66,21 @@ export function toGraphCanvas(graph: Graph | undefined, options: ToGraphCanvasOp
 
   const expandedNodeIds = new Set(options.expandedNodeIds ?? [])
   const sourceDocumentsByNodeId = options.sourceDocumentsByNodeId ?? {}
+  const hasExpandedNodes = expandedNodeIds.size > 0
+  const connectedNodeIds = new Set<string>()
+
+  if (hasExpandedNodes) {
+    for (const edge of graph.edges) {
+      if (expandedNodeIds.has(edge.source)) {
+        connectedNodeIds.add(edge.target)
+      }
+
+      if (expandedNodeIds.has(edge.target)) {
+        connectedNodeIds.add(edge.source)
+      }
+    }
+  }
+
   const levelGroups = new Map<number, typeof graph.nodes>()
   for (const node of graph.nodes) {
     const level = node.level || 0
@@ -86,11 +101,18 @@ export function toGraphCanvas(graph: Graph | undefined, options: ToGraphCanvasOp
     group.forEach((node) => {
       const category = categoryLabels[node.category] ?? 'Unknown'
       const expanded = expandedNodeIds.has(node.id)
+      const connected = connectedNodeIds.has(node.id)
       const sourceDocuments = sourceDocumentsByNodeId[node.id] ?? []
       const width = expanded ? EXPANDED_NODE_WIDTH : COLLAPSED_NODE_WIDTH
       const height = expanded
         ? estimateExpandedHeight(node.description, sourceDocuments, node.sourceChunkIds.length)
         : COLLAPSED_NODE_HEIGHT
+      const isDimmed = hasExpandedNodes && !expanded && !connected
+      const boxShadow = expanded
+        ? '0 28px 60px rgba(15, 23, 42, 0.16)'
+        : connected
+          ? '0 22px 48px rgba(15, 23, 42, 0.12)'
+          : '0 20px 45px rgba(15, 23, 42, 0.08)'
 
       columnWidth = Math.max(columnWidth, width)
       nodes.push({
@@ -119,8 +141,9 @@ export function toGraphCanvas(graph: Graph | undefined, options: ToGraphCanvasOp
           borderRadius: 24,
           border: `1px solid ${categoryColors[category] ?? categoryColors.Unknown}`,
           background: 'rgba(255,255,255,0.92)',
-          boxShadow: expanded ? '0 28px 60px rgba(15, 23, 42, 0.16)' : '0 20px 45px rgba(15, 23, 42, 0.08)',
+          boxShadow,
           zIndex: expanded ? 30 : 10,
+          opacity: isDimmed ? 0.4 : 1,
         },
       })
 
@@ -130,33 +153,38 @@ export function toGraphCanvas(graph: Graph | undefined, options: ToGraphCanvasOp
     currentX += columnWidth + COLUMN_GAP
   }
 
-  const edges: Edge[] = graph.edges.map((edge) => ({
-    id: edge.id,
-    source: edge.source,
-    target: edge.target,
-    type: 'smoothstep',
-    animated: edge.type !== EdgeType.HIERARCHICAL,
-    label: edgeLabels[edge.type] ?? 'edge',
-    markerEnd: {
-      type: MarkerType.ArrowClosed,
-      width: 18,
-      height: 18,
-      color: '#94a3b8',
-    },
-    style: {
-      stroke: '#94a3b8',
-      strokeWidth: edge.type === EdgeType.HIERARCHICAL ? 2 : 2.5,
-    },
-    labelStyle: {
-      fill: '#475569',
-      fontSize: 12,
-      fontWeight: 600,
-    },
-    labelBgStyle: {
-      fill: '#ffffff',
-      fillOpacity: 0.9,
-    },
-  }))
+  const edges: Edge[] = graph.edges.map((edge) => {
+    const highlighted = expandedNodeIds.has(edge.source) || expandedNodeIds.has(edge.target)
+
+    return {
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      type: 'smoothstep',
+      animated: highlighted || (!hasExpandedNodes && edge.type !== EdgeType.HIERARCHICAL),
+      label: edgeLabels[edge.type] ?? 'edge',
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        width: highlighted ? 20 : 18,
+        height: highlighted ? 20 : 18,
+        color: highlighted ? '#334155' : '#94a3b8',
+      },
+      style: {
+        stroke: highlighted ? '#334155' : '#94a3b8',
+        strokeWidth: highlighted ? 3.5 : edge.type === EdgeType.HIERARCHICAL ? 2 : 2.5,
+        opacity: hasExpandedNodes && !highlighted ? 0.18 : 1,
+      },
+      labelStyle: {
+        fill: highlighted ? '#334155' : '#475569',
+        fontSize: 12,
+        fontWeight: 600,
+      },
+      labelBgStyle: {
+        fill: '#ffffff',
+        fillOpacity: highlighted ? 0.98 : 0.9,
+      },
+    }
+  })
 
   return { nodes, edges }
 }
