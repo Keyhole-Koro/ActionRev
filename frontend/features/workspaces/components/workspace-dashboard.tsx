@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createWorkspace, getWorkspaceCards } from '../data/get-workspaces'
 import type { WorkspaceCard } from '../types/workspace-card'
 
@@ -12,6 +12,7 @@ export function WorkspaceDashboard() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
+  const createInFlightRef = useRef(false)
 
   useEffect(() => {
     let cancelled = false
@@ -37,13 +38,20 @@ export function WorkspaceDashboard() {
   }, [])
 
   async function handleCreateWorkspace() {
+    if (createInFlightRef.current) {
+      return
+    }
+
     try {
+      createInFlightRef.current = true
       setIsCreating(true)
       setError(null)
       const workspace = await createWorkspace('Untitled workspace')
       router.push(`/workspace/${workspace.id}`)
     } catch (createError) {
       setError(createError instanceof Error ? createError.message : String(createError))
+    } finally {
+      createInFlightRef.current = false
       setIsCreating(false)
     }
   }

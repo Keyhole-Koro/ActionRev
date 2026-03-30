@@ -29,6 +29,9 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [graphRefreshKey, setGraphRefreshKey] = useState(0)
   const nameInputRef = useRef<HTMLInputElement | null>(null)
+  const renameInFlightRef = useRef(false)
+  const uploadInFlightRef = useRef(false)
+  const refreshInFlightRef = useRef(false)
 
   useEffect(() => {
     let cancelled = false
@@ -87,16 +90,25 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
   const emptyMessage = workspace ? 'この workspace にはまだ document がありません。' : 'Workspace not found.'
 
   async function refreshWorkspaceState() {
-    const [result, workspaceDocuments] = await Promise.all([getWorkspaceCard(workspaceId), getWorkspaceDocuments(workspaceId)])
-    setWorkspace(result.workspace)
-    setDraftName(result.workspace?.name ?? '')
-    setDocuments(workspaceDocuments)
-    setPageError(result.error ?? (result.workspace ? null : 'Workspace not found.'))
-    setGraphRefreshKey((value) => value + 1)
+    if (refreshInFlightRef.current) {
+      return
+    }
+
+    try {
+      refreshInFlightRef.current = true
+      const [result, workspaceDocuments] = await Promise.all([getWorkspaceCard(workspaceId), getWorkspaceDocuments(workspaceId)])
+      setWorkspace(result.workspace)
+      setDraftName(result.workspace?.name ?? '')
+      setDocuments(workspaceDocuments)
+      setPageError(result.error ?? (result.workspace ? null : 'Workspace not found.'))
+      setGraphRefreshKey((value) => value + 1)
+    } finally {
+      refreshInFlightRef.current = false
+    }
   }
 
   async function commitWorkspaceName() {
-    if (!workspace) {
+    if (!workspace || renameInFlightRef.current) {
       return
     }
 
@@ -112,6 +124,7 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
     }
 
     try {
+      renameInFlightRef.current = true
       setIsRenaming(true)
       setPageError(null)
       const updatedWorkspace = await updateWorkspaceName(workspace.id, name)
@@ -121,6 +134,7 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
     } catch (renameError) {
       setPageError(renameError instanceof Error ? renameError.message : String(renameError))
     } finally {
+      renameInFlightRef.current = false
       setIsRenaming(false)
     }
   }
@@ -142,11 +156,12 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
   async function handleUploadDocument(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (!workspace || !selectedFile) {
+    if (!workspace || !selectedFile || uploadInFlightRef.current) {
       return
     }
 
     try {
+      uploadInFlightRef.current = true
       setIsUploading(true)
       setPageError(null)
       await uploadWorkspaceDocument(workspace.id, selectedFile)
@@ -156,6 +171,7 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
     } catch (uploadError) {
       setPageError(uploadError instanceof Error ? uploadError.message : String(uploadError))
     } finally {
+      uploadInFlightRef.current = false
       setIsUploading(false)
     }
   }
