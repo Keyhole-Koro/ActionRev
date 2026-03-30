@@ -48,6 +48,20 @@ function GraphCanvasNode({ data }: NodeProps<Node<GraphCanvasNodeData>>) {
             </div>
           </div>
 
+          {data.onExpandNeighbors && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                data.onExpandNeighbors!()
+              }}
+              disabled={data.isExpanding}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:border-slate-300 hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {data.isExpanding ? 'Loading neighbors…' : 'Expand neighbors'}
+            </button>
+          )}
+
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
               Source Documents

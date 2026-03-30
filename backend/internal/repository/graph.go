@@ -8,4 +8,5 @@ import (
 
 type GraphRepository interface {
 	GetGraph(ctx context.Context, workspaceID string, documentID string) (*graphv1.Graph, error)
+	ExpandNeighbors(ctx context.Context, workspaceID string, seedNodeID string, maxDepth uint32, limitPerHop uint32, edgeTypeFilters []graphv1.EdgeType) (*graphv1.Graph, error)
 }

@@ -10,11 +10,13 @@ export type GraphCanvasNodeData = {
   scope: string
   sourceChunkIds: string[]
   expanded?: boolean
+  isExpanding?: boolean
   sourceDocuments?: Array<{
     id: string
     filename: string
     status: string
   }>
+  onExpandNeighbors?: () => void
 }
 
 export type GraphCanvas = {

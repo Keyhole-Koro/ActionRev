@@ -7,6 +7,8 @@ import { GraphCanvasPanel } from '@/features/graph/components/graph-canvas-panel
 import { GraphFilterPanel } from '@/features/graph/components/graph-filter-panel'
 import { useGetGraph, type GraphFilters } from '@/features/graph/hooks/use-get-graph'
 import { toGraphCanvas } from '@/features/graph/model/to-graph-canvas'
+import { graphClient } from '@/lib/graph-client'
+import type { Edge, Node as GraphNode } from '@/src/generated/synthify/graph/v1/graph_types_pb'
 import {
   getWorkspaceCard,
   getWorkspaceDocuments,
@@ -35,6 +37,10 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [graphFilters, setGraphFilters] = useState<GraphFilters>({})
   const [searchQuery, setSearchQuery] = useState('')
+  const [extraNodes, setExtraNodes] = useState<GraphNode[]>([])
+  const [extraEdges, setExtraEdges] = useState<Edge[]>([])
+  const [expandingNodeIds, setExpandingNodeIds] = useState<Set<string>>(new Set())
+  const [expandedNeighborNodeIds, setExpandedNeighborNodeIds] = useState<Set<string>>(new Set())
   const nameInputRef = useRef<HTMLInputElement | null>(null)
   const renameInFlightRef = useRef(false)
   const uploadInFlightRef = useRef(false)
@@ -102,9 +108,25 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
   const combinedError = pageError ?? error
   const emptyMessage = workspace ? 'この workspace にはまだ document がありません。' : 'Workspace not found.'
   const expandedNodeIdSet = new Set(expandedNodeIds)
-  const sourceDocumentsByNodeId = graph
+
+  // Merge base graph with nodes/edges loaded via ExpandNeighbors
+  const mergedGraph = graph
+    ? (() => {
+        if (extraNodes.length === 0) return graph.graph
+        const baseNodeIds = new Set(graph.graph.nodes.map((n) => n.id))
+        const baseEdgeIds = new Set(graph.graph.edges.map((e) => e.id))
+        return {
+          ...graph.graph,
+          nodes: [...graph.graph.nodes, ...extraNodes.filter((n) => !baseNodeIds.has(n.id))],
+          edges: [...graph.graph.edges, ...extraEdges.filter((e) => !baseEdgeIds.has(e.id))],
+        }
+      })()
+    : null
+
+  const allNodes = mergedGraph?.nodes ?? []
+  const sourceDocumentsByNodeId = allNodes.length
     ? Object.fromEntries(
-        graph.graph.nodes.map((node) => {
+        allNodes.map((node) => {
           const sourceDocuments = node.documentId
             ? documents.filter((document) => document.id === node.documentId)
             : documents
@@ -120,30 +142,80 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
         }),
       )
     : {}
+
   const matchCount = searchQuery.trim()
-    ? graph?.graph.nodes.filter((node) => {
+    ? allNodes.filter((node) => {
         const q = searchQuery.trim().toLowerCase()
         return node.label.toLowerCase().includes(q) || node.description.toLowerCase().includes(q)
-      }).length ?? 0
+      }).length
     : null
 
-  const expandedCanvas = graph
-    ? toGraphCanvas(graph.graph, {
-        expandedNodeIds: expandedNodeIdSet,
-        sourceDocumentsByNodeId,
-        searchQuery,
-      })
+  const expandedCanvas = mergedGraph
+    ? (() => {
+        const canvas = toGraphCanvas(mergedGraph, {
+          expandedNodeIds: expandedNodeIdSet,
+          sourceDocumentsByNodeId,
+          searchQuery,
+        })
+        return {
+          ...canvas,
+          nodes: canvas.nodes.map((node) => ({
+            ...node,
+            data: {
+              ...node.data,
+              isExpanding: expandingNodeIds.has(node.id),
+              onExpandNeighbors: expandedNeighborNodeIds.has(node.id)
+                ? undefined
+                : () => void handleExpandNeighbors(node.id),
+            },
+          })),
+        }
+      })()
     : null
 
   useEffect(() => {
     if (!graph?.graph.nodes.length) {
       setExpandedNodeIds([])
+      setExtraNodes([])
+      setExtraEdges([])
+      setExpandedNeighborNodeIds(new Set())
       return
     }
 
     const graphNodeIds = new Set(graph.graph.nodes.map((node) => node.id))
     setExpandedNodeIds((current) => current.filter((nodeId) => graphNodeIds.has(nodeId)))
+    setExtraNodes([])
+    setExtraEdges([])
+    setExpandedNeighborNodeIds(new Set())
   }, [graph])
+
+  async function handleExpandNeighbors(nodeId: string) {
+    if (expandingNodeIds.has(nodeId)) return
+    setExpandingNodeIds((prev) => new Set(prev).add(nodeId))
+    try {
+      const response = await graphClient.expandNeighbors({
+        workspaceId: workspace?.id ?? workspaceId,
+        seedNodeId: nodeId,
+        maxDepth: 1,
+        limitPerHop: 10,
+        edgeTypeFilters: [],
+        resolveAliases: false,
+        crossDocument: true,
+        documentIds: [],
+      })
+      if (response.graph) {
+        setExtraNodes((prev) => [...prev, ...response.graph!.nodes])
+        setExtraEdges((prev) => [...prev, ...response.graph!.edges])
+      }
+      setExpandedNeighborNodeIds((prev) => new Set(prev).add(nodeId))
+    } finally {
+      setExpandingNodeIds((prev) => {
+        const next = new Set(prev)
+        next.delete(nodeId)
+        return next
+      })
+    }
+  }
 
   async function refreshWorkspaceState() {
     if (refreshInFlightRef.current) {

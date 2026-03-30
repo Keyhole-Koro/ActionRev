@@ -29,10 +29,14 @@ func (h *GraphHandler) GetGraph(
 }
 
 func (h *GraphHandler) ExpandNeighbors(
-	_ context.Context,
-	_ *connect.Request[graphv1.ExpandNeighborsRequest],
+	ctx context.Context,
+	req *connect.Request[graphv1.ExpandNeighborsRequest],
 ) (*connect.Response[graphv1.ExpandNeighborsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ExpandNeighbors is not implemented"))
+	res, err := h.service.ExpandNeighbors(ctx, req.Msg)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(res), nil
 }
 
 func (h *GraphHandler) FindPaths(
