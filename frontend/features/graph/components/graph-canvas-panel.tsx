@@ -9,54 +9,54 @@ type GraphCanvasPanelProps = {
   error: string | null
 }
 
-export function GraphCanvasPanel(props: GraphCanvasPanelProps) {
-  const { canvas, isLoading, error } = props
-
+export function GraphCanvasPanel({ canvas, isLoading, error }: GraphCanvasPanelProps) {
   return (
-    <section className="overflow-hidden rounded-[2rem] bg-slate-950/95 p-3 text-slate-50 shadow-panel ring-1 ring-slate-900/60 lg:col-span-2">
-      <div className="flex items-center justify-between gap-4 px-4 py-4 md:px-6">
-        <div>
-          <p className="text-sm uppercase tracking-[0.32em] text-teal-200">Canvas</p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight">Document graph</h2>
+    <div className="absolute inset-0">
+      {canvas ? (
+        <ReactFlow
+          fitView
+          nodes={canvas.nodes}
+          edges={canvas.edges}
+          proOptions={{ hideAttribution: true }}
+          defaultEdgeOptions={{ zIndex: 1 }}
+        >
+          <MiniMap
+            pannable
+            zoomable
+            nodeBorderRadius={6}
+            nodeColor={(node) =>
+              String(node.style?.border ?? '#e2e8f0').replace('1px solid ', '')
+            }
+            maskColor="rgba(248,250,252,0.7)"
+            style={{
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: 8,
+            }}
+          />
+          <Controls showInteractive={false} />
+          <Background color="#e2e8f0" gap={24} size={1} />
+        </ReactFlow>
+      ) : (
+        <div className="flex h-full items-center justify-center text-sm text-slate-300">
+          {isLoading ? 'Loading…' : 'No graph data.'}
         </div>
-        <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">
-          {isLoading ? 'Loading graph' : canvas ? `${canvas.nodes.length} nodes / ${canvas.edges.length} edges` : 'No graph'}
-        </div>
-      </div>
+      )}
 
-      {error ? (
-        <div className="px-4 pb-4 md:px-6">
-          <p className="rounded-2xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
-            Graph canvas failed: {error}
+      {/* Floating status badge — bottom left */}
+      {canvas && (
+        <div className="absolute bottom-4 left-4 z-10 rounded-lg border border-slate-200 bg-white/80 px-3 py-1.5 font-mono text-xs text-slate-400 shadow-sm backdrop-blur-sm">
+          {canvas.nodes.length} nodes · {canvas.edges.length} edges
+        </div>
+      )}
+
+      {error && (
+        <div className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2">
+          <p className="rounded-lg border border-red-200 bg-white/90 px-4 py-2 text-xs text-red-500 shadow-sm backdrop-blur-sm">
+            {error}
           </p>
         </div>
-      ) : null}
-
-      <div className="h-[34rem] rounded-[1.5rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.12),_transparent_24%),linear-gradient(180deg,_rgba(15,23,42,0.85),_rgba(2,6,23,1))]">
-        {canvas ? (
-          <ReactFlow
-            fitView
-            nodes={canvas.nodes}
-            edges={canvas.edges}
-            proOptions={{ hideAttribution: true }}
-            defaultEdgeOptions={{ zIndex: 1 }}
-          >
-            <MiniMap
-              pannable
-              zoomable
-              nodeBorderRadius={12}
-              nodeColor={(node) => String(node.style?.border ?? '#e2e8f0').replace('1px solid ', '')}
-              maskColor="rgba(15, 23, 42, 0.45)"
-            />
-            <Controls showInteractive={false} />
-            <Background color="rgba(148, 163, 184, 0.28)" gap={24} size={1.2} />
-          </ReactFlow>
-        ) : (
-          <div className="flex h-full items-center justify-center text-sm text-slate-300">
-            {isLoading ? 'Loading graph…' : 'No graph data available.'}
-          </div>
-        )}
-      </div>
-    </section>
+      )}
+    </div>
   )
 }

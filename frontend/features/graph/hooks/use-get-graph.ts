@@ -6,6 +6,11 @@ import { toGraphCanvas } from '../model/to-graph-canvas'
 import type { LoadedGraph } from '../types/graph-canvas'
 import type { GraphSummary } from '../types/graph-summary'
 
+type UseGetGraphOptions = {
+  workspaceId: string
+  documentId: string
+}
+
 type UseGetGraphResult = {
   graph: LoadedGraph | null
   summary: GraphSummary | null
@@ -13,7 +18,8 @@ type UseGetGraphResult = {
   error: string | null
 }
 
-export function useGetGraph(): UseGetGraphResult {
+export function useGetGraph(options: UseGetGraphOptions): UseGetGraphResult {
+  const { workspaceId, documentId } = options
   const [graph, setGraph] = useState<LoadedGraph | null>(null)
   const [summary, setSummary] = useState<GraphSummary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -26,8 +32,8 @@ export function useGetGraph(): UseGetGraphResult {
       try {
         setIsLoading(true)
         const response = await graphClient.getGraph({
-          workspaceId: 'ws_demo',
-          documentId: 'doc_demo',
+          workspaceId,
+          documentId,
           categoryFilters: [],
           levelFilters: [],
           edgeTypeFilters: [],
@@ -75,7 +81,7 @@ export function useGetGraph(): UseGetGraphResult {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [documentId, workspaceId])
 
   return { graph, summary, isLoading, error }
 }
