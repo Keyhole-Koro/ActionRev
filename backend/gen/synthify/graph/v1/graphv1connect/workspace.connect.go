@@ -39,6 +39,9 @@ const (
 	// WorkspaceServiceGetWorkspaceProcedure is the fully-qualified name of the WorkspaceService's
 	// GetWorkspace RPC.
 	WorkspaceServiceGetWorkspaceProcedure = "/synthify.graph.v1.WorkspaceService/GetWorkspace"
+	// WorkspaceServiceUpdateWorkspaceProcedure is the fully-qualified name of the WorkspaceService's
+	// UpdateWorkspace RPC.
+	WorkspaceServiceUpdateWorkspaceProcedure = "/synthify.graph.v1.WorkspaceService/UpdateWorkspace"
 	// WorkspaceServiceListWorkspacesProcedure is the fully-qualified name of the WorkspaceService's
 	// ListWorkspaces RPC.
 	WorkspaceServiceListWorkspacesProcedure = "/synthify.graph.v1.WorkspaceService/ListWorkspaces"
@@ -51,6 +54,7 @@ const (
 type WorkspaceServiceClient interface {
 	CreateWorkspace(context.Context, *connect.Request[v1.CreateWorkspaceRequest]) (*connect.Response[v1.Workspace], error)
 	GetWorkspace(context.Context, *connect.Request[v1.GetWorkspaceRequest]) (*connect.Response[v1.Workspace], error)
+	UpdateWorkspace(context.Context, *connect.Request[v1.UpdateWorkspaceRequest]) (*connect.Response[v1.Workspace], error)
 	ListWorkspaces(context.Context, *connect.Request[v1.ListWorkspacesRequest]) (*connect.Response[v1.ListWorkspacesResponse], error)
 	AddWorkspaceMember(context.Context, *connect.Request[v1.AddWorkspaceMemberRequest]) (*connect.Response[v1.AddWorkspaceMemberResponse], error)
 }
@@ -78,6 +82,12 @@ func NewWorkspaceServiceClient(httpClient connect.HTTPClient, baseURL string, op
 			connect.WithSchema(workspaceServiceMethods.ByName("GetWorkspace")),
 			connect.WithClientOptions(opts...),
 		),
+		updateWorkspace: connect.NewClient[v1.UpdateWorkspaceRequest, v1.Workspace](
+			httpClient,
+			baseURL+WorkspaceServiceUpdateWorkspaceProcedure,
+			connect.WithSchema(workspaceServiceMethods.ByName("UpdateWorkspace")),
+			connect.WithClientOptions(opts...),
+		),
 		listWorkspaces: connect.NewClient[v1.ListWorkspacesRequest, v1.ListWorkspacesResponse](
 			httpClient,
 			baseURL+WorkspaceServiceListWorkspacesProcedure,
@@ -97,6 +107,7 @@ func NewWorkspaceServiceClient(httpClient connect.HTTPClient, baseURL string, op
 type workspaceServiceClient struct {
 	createWorkspace    *connect.Client[v1.CreateWorkspaceRequest, v1.Workspace]
 	getWorkspace       *connect.Client[v1.GetWorkspaceRequest, v1.Workspace]
+	updateWorkspace    *connect.Client[v1.UpdateWorkspaceRequest, v1.Workspace]
 	listWorkspaces     *connect.Client[v1.ListWorkspacesRequest, v1.ListWorkspacesResponse]
 	addWorkspaceMember *connect.Client[v1.AddWorkspaceMemberRequest, v1.AddWorkspaceMemberResponse]
 }
@@ -109,6 +120,11 @@ func (c *workspaceServiceClient) CreateWorkspace(ctx context.Context, req *conne
 // GetWorkspace calls synthify.graph.v1.WorkspaceService.GetWorkspace.
 func (c *workspaceServiceClient) GetWorkspace(ctx context.Context, req *connect.Request[v1.GetWorkspaceRequest]) (*connect.Response[v1.Workspace], error) {
 	return c.getWorkspace.CallUnary(ctx, req)
+}
+
+// UpdateWorkspace calls synthify.graph.v1.WorkspaceService.UpdateWorkspace.
+func (c *workspaceServiceClient) UpdateWorkspace(ctx context.Context, req *connect.Request[v1.UpdateWorkspaceRequest]) (*connect.Response[v1.Workspace], error) {
+	return c.updateWorkspace.CallUnary(ctx, req)
 }
 
 // ListWorkspaces calls synthify.graph.v1.WorkspaceService.ListWorkspaces.
@@ -125,6 +141,7 @@ func (c *workspaceServiceClient) AddWorkspaceMember(ctx context.Context, req *co
 type WorkspaceServiceHandler interface {
 	CreateWorkspace(context.Context, *connect.Request[v1.CreateWorkspaceRequest]) (*connect.Response[v1.Workspace], error)
 	GetWorkspace(context.Context, *connect.Request[v1.GetWorkspaceRequest]) (*connect.Response[v1.Workspace], error)
+	UpdateWorkspace(context.Context, *connect.Request[v1.UpdateWorkspaceRequest]) (*connect.Response[v1.Workspace], error)
 	ListWorkspaces(context.Context, *connect.Request[v1.ListWorkspacesRequest]) (*connect.Response[v1.ListWorkspacesResponse], error)
 	AddWorkspaceMember(context.Context, *connect.Request[v1.AddWorkspaceMemberRequest]) (*connect.Response[v1.AddWorkspaceMemberResponse], error)
 }
@@ -148,6 +165,12 @@ func NewWorkspaceServiceHandler(svc WorkspaceServiceHandler, opts ...connect.Han
 		connect.WithSchema(workspaceServiceMethods.ByName("GetWorkspace")),
 		connect.WithHandlerOptions(opts...),
 	)
+	workspaceServiceUpdateWorkspaceHandler := connect.NewUnaryHandler(
+		WorkspaceServiceUpdateWorkspaceProcedure,
+		svc.UpdateWorkspace,
+		connect.WithSchema(workspaceServiceMethods.ByName("UpdateWorkspace")),
+		connect.WithHandlerOptions(opts...),
+	)
 	workspaceServiceListWorkspacesHandler := connect.NewUnaryHandler(
 		WorkspaceServiceListWorkspacesProcedure,
 		svc.ListWorkspaces,
@@ -166,6 +189,8 @@ func NewWorkspaceServiceHandler(svc WorkspaceServiceHandler, opts ...connect.Han
 			workspaceServiceCreateWorkspaceHandler.ServeHTTP(w, r)
 		case WorkspaceServiceGetWorkspaceProcedure:
 			workspaceServiceGetWorkspaceHandler.ServeHTTP(w, r)
+		case WorkspaceServiceUpdateWorkspaceProcedure:
+			workspaceServiceUpdateWorkspaceHandler.ServeHTTP(w, r)
 		case WorkspaceServiceListWorkspacesProcedure:
 			workspaceServiceListWorkspacesHandler.ServeHTTP(w, r)
 		case WorkspaceServiceAddWorkspaceMemberProcedure:
@@ -185,6 +210,10 @@ func (UnimplementedWorkspaceServiceHandler) CreateWorkspace(context.Context, *co
 
 func (UnimplementedWorkspaceServiceHandler) GetWorkspace(context.Context, *connect.Request[v1.GetWorkspaceRequest]) (*connect.Response[v1.Workspace], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("synthify.graph.v1.WorkspaceService.GetWorkspace is not implemented"))
+}
+
+func (UnimplementedWorkspaceServiceHandler) UpdateWorkspace(context.Context, *connect.Request[v1.UpdateWorkspaceRequest]) (*connect.Response[v1.Workspace], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("synthify.graph.v1.WorkspaceService.UpdateWorkspace is not implemented"))
 }
 
 func (UnimplementedWorkspaceServiceHandler) ListWorkspaces(context.Context, *connect.Request[v1.ListWorkspacesRequest]) (*connect.Response[v1.ListWorkspacesResponse], error) {

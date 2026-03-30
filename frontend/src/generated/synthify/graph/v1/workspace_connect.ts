@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { AddWorkspaceMemberRequest, AddWorkspaceMemberResponse, CreateWorkspaceRequest, GetWorkspaceRequest, ListWorkspacesRequest, ListWorkspacesResponse, Workspace } from "./workspace_pb.js";
+import { AddWorkspaceMemberRequest, AddWorkspaceMemberResponse, CreateWorkspaceRequest, GetWorkspaceRequest, ListWorkspacesRequest, ListWorkspacesResponse, UpdateWorkspaceRequest, Workspace } from "./workspace_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -27,6 +27,15 @@ export const WorkspaceService = {
     getWorkspace: {
       name: "GetWorkspace",
       I: GetWorkspaceRequest,
+      O: Workspace,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc synthify.graph.v1.WorkspaceService.UpdateWorkspace
+     */
+    updateWorkspace: {
+      name: "UpdateWorkspace",
+      I: UpdateWorkspaceRequest,
       O: Workspace,
       kind: MethodKind.Unary,
     },

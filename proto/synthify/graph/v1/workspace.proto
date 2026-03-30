@@ -33,6 +33,11 @@ message GetWorkspaceRequest {
   string workspace_id = 1;
 }
 
+message UpdateWorkspaceRequest {
+  string workspace_id = 1;
+  string name = 2;
+}
+
 message ListWorkspacesRequest {}
 
 message ListWorkspacesResponse {
@@ -52,6 +57,7 @@ message AddWorkspaceMemberResponse {
 service WorkspaceService {
   rpc CreateWorkspace(CreateWorkspaceRequest) returns (Workspace);
   rpc GetWorkspace(GetWorkspaceRequest) returns (Workspace);
+  rpc UpdateWorkspace(UpdateWorkspaceRequest) returns (Workspace);
   rpc ListWorkspaces(ListWorkspacesRequest) returns (ListWorkspacesResponse);
   rpc AddWorkspaceMember(AddWorkspaceMemberRequest) returns (AddWorkspaceMemberResponse);
 }

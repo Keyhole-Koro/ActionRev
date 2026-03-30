@@ -5,6 +5,6 @@ export type WorkspaceCard = {
   ownerLabel: string
   graphNodeCount: number
   graphEdgeCount: number
-  documentId: string
+  documentId: string | null
   badge: string
 }

@@ -8,7 +8,7 @@ import type { GraphSummary } from '../types/graph-summary'
 
 type UseGetGraphOptions = {
   workspaceId: string
-  documentId: string
+  documentId: string | null
 }
 
 type UseGetGraphResult = {
@@ -29,6 +29,14 @@ export function useGetGraph(options: UseGetGraphOptions): UseGetGraphResult {
     let cancelled = false
 
     async function load() {
+      if (!documentId) {
+        setGraph(null)
+        setSummary(null)
+        setError(null)
+        setIsLoading(false)
+        return
+      }
+
       try {
         setIsLoading(true)
         const response = await graphClient.getGraph({

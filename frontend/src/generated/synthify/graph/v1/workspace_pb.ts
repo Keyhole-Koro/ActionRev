@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file synthify/graph/v1/workspace.proto.
  */
 export const file_synthify_graph_v1_workspace: GenFile = /*@__PURE__*/
-  fileDesc("CiFzeW50aGlmeS9ncmFwaC92MS93b3Jrc3BhY2UucHJvdG8SEXN5bnRoaWZ5LmdyYXBoLnYxIl8KCVdvcmtzcGFjZRIUCgx3b3Jrc3BhY2VfaWQYASABKAkSDAoEbmFtZRgCIAEoCRIuCgpjcmVhdGVkX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJoCg9Xb3Jrc3BhY2VNZW1iZXISFAoMd29ya3NwYWNlX2lkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSLgoEcm9sZRgDIAEoDjIgLnN5bnRoaWZ5LmdyYXBoLnYxLldvcmtzcGFjZVJvbGUiJgoWQ3JlYXRlV29ya3NwYWNlUmVxdWVzdBIMCgRuYW1lGAEgASgJIisKE0dldFdvcmtzcGFjZVJlcXVlc3QSFAoMd29ya3NwYWNlX2lkGAEgASgJIhcKFUxpc3RXb3Jrc3BhY2VzUmVxdWVzdCJKChZMaXN0V29ya3NwYWNlc1Jlc3BvbnNlEjAKCndvcmtzcGFjZXMYASADKAsyHC5zeW50aGlmeS5ncmFwaC52MS5Xb3Jrc3BhY2UicgoZQWRkV29ya3NwYWNlTWVtYmVyUmVxdWVzdBIUCgx3b3Jrc3BhY2VfaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIuCgRyb2xlGAMgASgOMiAuc3ludGhpZnkuZ3JhcGgudjEuV29ya3NwYWNlUm9sZSJQChpBZGRXb3Jrc3BhY2VNZW1iZXJSZXNwb25zZRIyCgZtZW1iZXIYASABKAsyIi5zeW50aGlmeS5ncmFwaC52MS5Xb3Jrc3BhY2VNZW1iZXIqfwoNV29ya3NwYWNlUm9sZRIeChpXT1JLU1BBQ0VfUk9MRV9VTlNQRUNJRklFRBAAEhgKFFdPUktTUEFDRV9ST0xFX09XTkVSEAESGQoVV09SS1NQQUNFX1JPTEVfRURJVE9SEAISGQoVV09SS1NQQUNFX1JPTEVfVklFV0VSEAMyngMKEFdvcmtzcGFjZVNlcnZpY2USWgoPQ3JlYXRlV29ya3NwYWNlEikuc3ludGhpZnkuZ3JhcGgudjEuQ3JlYXRlV29ya3NwYWNlUmVxdWVzdBocLnN5bnRoaWZ5LmdyYXBoLnYxLldvcmtzcGFjZRJUCgxHZXRXb3Jrc3BhY2USJi5zeW50aGlmeS5ncmFwaC52MS5HZXRXb3Jrc3BhY2VSZXF1ZXN0Ghwuc3ludGhpZnkuZ3JhcGgudjEuV29ya3NwYWNlEmUKDkxpc3RXb3Jrc3BhY2VzEiguc3ludGhpZnkuZ3JhcGgudjEuTGlzdFdvcmtzcGFjZXNSZXF1ZXN0Gikuc3ludGhpZnkuZ3JhcGgudjEuTGlzdFdvcmtzcGFjZXNSZXNwb25zZRJxChJBZGRXb3Jrc3BhY2VNZW1iZXISLC5zeW50aGlmeS5ncmFwaC52MS5BZGRXb3Jrc3BhY2VNZW1iZXJSZXF1ZXN0Gi0uc3ludGhpZnkuZ3JhcGgudjEuQWRkV29ya3NwYWNlTWVtYmVyUmVzcG9uc2VCyAEKFWNvbS5zeW50aGlmeS5ncmFwaC52MUIOV29ya3NwYWNlUHJvdG9QAVo5Z2l0aHViLmNvbS9zeW50aGlmeS9iYWNrZW5kL2dlbi9zeW50aGlmeS9ncmFwaC92MTtncmFwaHYxogIDU0dYqgIRU3ludGhpZnkuR3JhcGguVjHKAhFTeW50aGlmeVxHcmFwaFxWMeICHVN5bnRoaWZ5XEdyYXBoXFYxXEdQQk1ldGFkYXRh6gITU3ludGhpZnk6OkdyYXBoOjpWMWIGcHJvdG8z", [file_google_protobuf_timestamp]);
+  fileDesc("CiFzeW50aGlmeS9ncmFwaC92MS93b3Jrc3BhY2UucHJvdG8SEXN5bnRoaWZ5LmdyYXBoLnYxIl8KCVdvcmtzcGFjZRIUCgx3b3Jrc3BhY2VfaWQYASABKAkSDAoEbmFtZRgCIAEoCRIuCgpjcmVhdGVkX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJoCg9Xb3Jrc3BhY2VNZW1iZXISFAoMd29ya3NwYWNlX2lkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSLgoEcm9sZRgDIAEoDjIgLnN5bnRoaWZ5LmdyYXBoLnYxLldvcmtzcGFjZVJvbGUiJgoWQ3JlYXRlV29ya3NwYWNlUmVxdWVzdBIMCgRuYW1lGAEgASgJIisKE0dldFdvcmtzcGFjZVJlcXVlc3QSFAoMd29ya3NwYWNlX2lkGAEgASgJIjwKFlVwZGF0ZVdvcmtzcGFjZVJlcXVlc3QSFAoMd29ya3NwYWNlX2lkGAEgASgJEgwKBG5hbWUYAiABKAkiFwoVTGlzdFdvcmtzcGFjZXNSZXF1ZXN0IkoKFkxpc3RXb3Jrc3BhY2VzUmVzcG9uc2USMAoKd29ya3NwYWNlcxgBIAMoCzIcLnN5bnRoaWZ5LmdyYXBoLnYxLldvcmtzcGFjZSJyChlBZGRXb3Jrc3BhY2VNZW1iZXJSZXF1ZXN0EhQKDHdvcmtzcGFjZV9pZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEi4KBHJvbGUYAyABKA4yIC5zeW50aGlmeS5ncmFwaC52MS5Xb3Jrc3BhY2VSb2xlIlAKGkFkZFdvcmtzcGFjZU1lbWJlclJlc3BvbnNlEjIKBm1lbWJlchgBIAEoCzIiLnN5bnRoaWZ5LmdyYXBoLnYxLldvcmtzcGFjZU1lbWJlcip/Cg1Xb3Jrc3BhY2VSb2xlEh4KGldPUktTUEFDRV9ST0xFX1VOU1BFQ0lGSUVEEAASGAoUV09SS1NQQUNFX1JPTEVfT1dORVIQARIZChVXT1JLU1BBQ0VfUk9MRV9FRElUT1IQAhIZChVXT1JLU1BBQ0VfUk9MRV9WSUVXRVIQAzL6AwoQV29ya3NwYWNlU2VydmljZRJaCg9DcmVhdGVXb3Jrc3BhY2USKS5zeW50aGlmeS5ncmFwaC52MS5DcmVhdGVXb3Jrc3BhY2VSZXF1ZXN0Ghwuc3ludGhpZnkuZ3JhcGgudjEuV29ya3NwYWNlElQKDEdldFdvcmtzcGFjZRImLnN5bnRoaWZ5LmdyYXBoLnYxLkdldFdvcmtzcGFjZVJlcXVlc3QaHC5zeW50aGlmeS5ncmFwaC52MS5Xb3Jrc3BhY2USWgoPVXBkYXRlV29ya3NwYWNlEikuc3ludGhpZnkuZ3JhcGgudjEuVXBkYXRlV29ya3NwYWNlUmVxdWVzdBocLnN5bnRoaWZ5LmdyYXBoLnYxLldvcmtzcGFjZRJlCg5MaXN0V29ya3NwYWNlcxIoLnN5bnRoaWZ5LmdyYXBoLnYxLkxpc3RXb3Jrc3BhY2VzUmVxdWVzdBopLnN5bnRoaWZ5LmdyYXBoLnYxLkxpc3RXb3Jrc3BhY2VzUmVzcG9uc2UScQoSQWRkV29ya3NwYWNlTWVtYmVyEiwuc3ludGhpZnkuZ3JhcGgudjEuQWRkV29ya3NwYWNlTWVtYmVyUmVxdWVzdBotLnN5bnRoaWZ5LmdyYXBoLnYxLkFkZFdvcmtzcGFjZU1lbWJlclJlc3BvbnNlQsgBChVjb20uc3ludGhpZnkuZ3JhcGgudjFCDldvcmtzcGFjZVByb3RvUAFaOWdpdGh1Yi5jb20vc3ludGhpZnkvYmFja2VuZC9nZW4vc3ludGhpZnkvZ3JhcGgvdjE7Z3JhcGh2MaICA1NHWKoCEVN5bnRoaWZ5LkdyYXBoLlYxygIRU3ludGhpZnlcR3JhcGhcVjHiAh1TeW50aGlmeVxHcmFwaFxWMVxHUEJNZXRhZGF0YeoCE1N5bnRoaWZ5OjpHcmFwaDo6VjFiBnByb3RvMw", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message synthify.graph.v1.Workspace
@@ -103,6 +103,28 @@ export const GetWorkspaceRequestSchema: GenMessage<GetWorkspaceRequest> = /*@__P
   messageDesc(file_synthify_graph_v1_workspace, 3);
 
 /**
+ * @generated from message synthify.graph.v1.UpdateWorkspaceRequest
+ */
+export type UpdateWorkspaceRequest = Message<"synthify.graph.v1.UpdateWorkspaceRequest"> & {
+  /**
+   * @generated from field: string workspace_id = 1;
+   */
+  workspaceId: string;
+
+  /**
+   * @generated from field: string name = 2;
+   */
+  name: string;
+};
+
+/**
+ * Describes the message synthify.graph.v1.UpdateWorkspaceRequest.
+ * Use `create(UpdateWorkspaceRequestSchema)` to create a new message.
+ */
+export const UpdateWorkspaceRequestSchema: GenMessage<UpdateWorkspaceRequest> = /*@__PURE__*/
+  messageDesc(file_synthify_graph_v1_workspace, 4);
+
+/**
  * @generated from message synthify.graph.v1.ListWorkspacesRequest
  */
 export type ListWorkspacesRequest = Message<"synthify.graph.v1.ListWorkspacesRequest"> & {
@@ -113,7 +135,7 @@ export type ListWorkspacesRequest = Message<"synthify.graph.v1.ListWorkspacesReq
  * Use `create(ListWorkspacesRequestSchema)` to create a new message.
  */
 export const ListWorkspacesRequestSchema: GenMessage<ListWorkspacesRequest> = /*@__PURE__*/
-  messageDesc(file_synthify_graph_v1_workspace, 4);
+  messageDesc(file_synthify_graph_v1_workspace, 5);
 
 /**
  * @generated from message synthify.graph.v1.ListWorkspacesResponse
@@ -130,7 +152,7 @@ export type ListWorkspacesResponse = Message<"synthify.graph.v1.ListWorkspacesRe
  * Use `create(ListWorkspacesResponseSchema)` to create a new message.
  */
 export const ListWorkspacesResponseSchema: GenMessage<ListWorkspacesResponse> = /*@__PURE__*/
-  messageDesc(file_synthify_graph_v1_workspace, 5);
+  messageDesc(file_synthify_graph_v1_workspace, 6);
 
 /**
  * @generated from message synthify.graph.v1.AddWorkspaceMemberRequest
@@ -157,7 +179,7 @@ export type AddWorkspaceMemberRequest = Message<"synthify.graph.v1.AddWorkspaceM
  * Use `create(AddWorkspaceMemberRequestSchema)` to create a new message.
  */
 export const AddWorkspaceMemberRequestSchema: GenMessage<AddWorkspaceMemberRequest> = /*@__PURE__*/
-  messageDesc(file_synthify_graph_v1_workspace, 6);
+  messageDesc(file_synthify_graph_v1_workspace, 7);
 
 /**
  * @generated from message synthify.graph.v1.AddWorkspaceMemberResponse
@@ -174,7 +196,7 @@ export type AddWorkspaceMemberResponse = Message<"synthify.graph.v1.AddWorkspace
  * Use `create(AddWorkspaceMemberResponseSchema)` to create a new message.
  */
 export const AddWorkspaceMemberResponseSchema: GenMessage<AddWorkspaceMemberResponse> = /*@__PURE__*/
-  messageDesc(file_synthify_graph_v1_workspace, 7);
+  messageDesc(file_synthify_graph_v1_workspace, 8);
 
 /**
  * @generated from enum synthify.graph.v1.WorkspaceRole
@@ -225,6 +247,14 @@ export const WorkspaceService: GenService<{
   getWorkspace: {
     methodKind: "unary";
     input: typeof GetWorkspaceRequestSchema;
+    output: typeof WorkspaceSchema;
+  },
+  /**
+   * @generated from rpc synthify.graph.v1.WorkspaceService.UpdateWorkspace
+   */
+  updateWorkspace: {
+    methodKind: "unary";
+    input: typeof UpdateWorkspaceRequestSchema;
     output: typeof WorkspaceSchema;
   },
   /**

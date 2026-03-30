@@ -7,17 +7,24 @@ services:
     working_dir: /workspace/frontend
     command: >
       bash -c '
+        set -e;
         if [ ! -f package.json ]; then
           echo "frontend/package.json not found. Waiting for frontend implementation...";
           sleep infinity;
         fi;
         rm -rf .next;
-        npm install;
+        if [ -f package-lock.json ]; then
+          npm ci;
+        else
+          npm install;
+        fi;
         npm run dev
       '
     environment:
+      NODE_ENV: development
       NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:${BACKEND_PORT:-8080}}
       INTERNAL_API_BASE_URL: ${INTERNAL_API_BASE_URL:-http://backend:8080}
+      WATCHPACK_POLLING: "true"
     ports:
       - "${FRONTEND_PORT:-5173}:5173"
     volumes:

@@ -77,9 +77,14 @@ func main() {
 	graphRepo := mockrepo.NewGraphRepository()
 	graphService := service.NewGraphService(graphRepo)
 	graphHandler := handler.NewGraphHandler(graphService)
+	workspaceRepo := mockrepo.NewWorkspaceRepository()
+	workspaceService := service.NewWorkspaceService(workspaceRepo)
+	workspaceHandler := handler.NewWorkspaceHandler(workspaceService)
 
 	path, connectHandler := graphv1connect.NewGraphServiceHandler(graphHandler)
 	mux.Handle(path, connectHandler)
+	workspacePath, workspaceConnectHandler := graphv1connect.NewWorkspaceServiceHandler(workspaceHandler)
+	mux.Handle(workspacePath, workspaceConnectHandler)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

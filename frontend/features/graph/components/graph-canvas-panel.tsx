@@ -7,9 +7,15 @@ type GraphCanvasPanelProps = {
   canvas: GraphCanvas | null
   isLoading: boolean
   error: string | null
+  emptyMessage?: string
 }
 
-export function GraphCanvasPanel({ canvas, isLoading, error }: GraphCanvasPanelProps) {
+export function GraphCanvasPanel({
+  canvas,
+  isLoading,
+  error,
+  emptyMessage = 'No graph data.',
+}: GraphCanvasPanelProps) {
   return (
     <div className="absolute inset-0">
       {canvas ? (
@@ -39,7 +45,7 @@ export function GraphCanvasPanel({ canvas, isLoading, error }: GraphCanvasPanelP
         </ReactFlow>
       ) : (
         <div className="flex h-full items-center justify-center text-sm text-slate-300">
-          {isLoading ? 'Loading…' : 'No graph data.'}
+          {isLoading ? 'Loading…' : emptyMessage}
         </div>
       )}
 
