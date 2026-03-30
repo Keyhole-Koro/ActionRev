@@ -2,7 +2,7 @@ package handler
 
 import (
 	"context"
-	"errors"
+	"net/http"
 	"strings"
 
 	connect "connectrpc.com/connect"
@@ -27,8 +27,13 @@ func (h *DocumentHandler) CreateDocument(ctx context.Context, req *connect.Reque
 	return connect.NewResponse(response), nil
 }
 
-func (h *DocumentHandler) GetUploadUrl(_ context.Context, _ *connect.Request[graphv1.GetUploadUrlRequest]) (*connect.Response[graphv1.GetUploadUrlResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("GetUploadUrl is not implemented"))
+func (h *DocumentHandler) GetUploadUrl(ctx context.Context, req *connect.Request[graphv1.GetUploadUrlRequest]) (*connect.Response[graphv1.GetUploadUrlResponse], error) {
+	response, err := h.service.GetUploadURL(ctx, req.Msg)
+	if err != nil {
+		return nil, toDocumentConnectError(err)
+	}
+
+	return connect.NewResponse(response), nil
 }
 
 func (h *DocumentHandler) GetDocument(ctx context.Context, req *connect.Request[graphv1.GetDocumentRequest]) (*connect.Response[graphv1.Document], error) {
@@ -66,9 +71,41 @@ func toDocumentConnectError(err error) error {
 	switch {
 	case strings.Contains(err.Error(), "not found"):
 		return connect.NewError(connect.CodeNotFound, err)
-	case strings.Contains(err.Error(), "required"):
+	case strings.Contains(err.Error(), "required"),
+		strings.Contains(err.Error(), "must be positive"),
+		strings.Contains(err.Error(), "mismatch"),
+		strings.Contains(err.Error(), "expired"):
 		return connect.NewError(connect.CodeInvalidArgument, err)
 	default:
 		return connect.NewError(connect.CodeInternal, err)
 	}
+}
+
+type MockUploadHandler struct {
+	service *service.DocumentService
+}
+
+func NewMockUploadHandler(service *service.DocumentService) *MockUploadHandler {
+	return &MockUploadHandler{service: service}
+}
+
+func (h *MockUploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		w.Header().Set("Allow", http.MethodPut)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	token := strings.TrimPrefix(r.URL.Path, "/mock/uploads/")
+	if token == "" || token == r.URL.Path {
+		http.Error(w, "upload token is required", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.ConsumeMockUpload(r.Context(), token, r.Header.Get("Content-Type"), r.ContentLength, r.Body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

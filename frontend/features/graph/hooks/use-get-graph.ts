@@ -6,10 +6,17 @@ import { toGraphCanvas } from '../model/to-graph-canvas'
 import type { LoadedGraph } from '../types/graph-canvas'
 import type { GraphSummary } from '../types/graph-summary'
 
+export type GraphFilters = {
+  categoryFilters?: number[]
+  edgeTypeFilters?: number[]
+  limit?: number
+}
+
 type UseGetGraphOptions = {
   workspaceId: string
   documentId: string | null
   refreshKey?: number
+  filters?: GraphFilters
 }
 
 type UseGetGraphResult = {
@@ -20,7 +27,7 @@ type UseGetGraphResult = {
 }
 
 export function useGetGraph(options: UseGetGraphOptions): UseGetGraphResult {
-  const { workspaceId, documentId, refreshKey = 0 } = options
+  const { workspaceId, documentId, refreshKey = 0, filters } = options
   const [graph, setGraph] = useState<LoadedGraph | null>(null)
   const [summary, setSummary] = useState<GraphSummary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -35,10 +42,10 @@ export function useGetGraph(options: UseGetGraphOptions): UseGetGraphResult {
         const response = await graphClient.getGraph({
           workspaceId,
           documentId: documentId ?? '',
-          categoryFilters: [],
+          categoryFilters: filters?.categoryFilters ?? [],
           levelFilters: [],
-          edgeTypeFilters: [],
-          limit: 50,
+          edgeTypeFilters: filters?.edgeTypeFilters ?? [],
+          limit: filters?.limit ?? 50,
           sourceFilename: '',
           resolveAliases: false,
         })
@@ -82,7 +89,7 @@ export function useGetGraph(options: UseGetGraphOptions): UseGetGraphResult {
     return () => {
       cancelled = true
     }
-  }, [documentId, refreshKey, workspaceId])
+  }, [documentId, refreshKey, workspaceId, filters?.categoryFilters, filters?.edgeTypeFilters, filters?.limit])
 
   return { graph, summary, isLoading, error }
 }

@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import type { NodeMouseHandler } from '@xyflow/react'
 import { GraphCanvasPanel } from '@/features/graph/components/graph-canvas-panel'
-import { useGetGraph } from '@/features/graph/hooks/use-get-graph'
+import { GraphFilterPanel } from '@/features/graph/components/graph-filter-panel'
+import { useGetGraph, type GraphFilters } from '@/features/graph/hooks/use-get-graph'
 import { toGraphCanvas } from '@/features/graph/model/to-graph-canvas'
 import {
   getWorkspaceCard,
@@ -31,6 +32,8 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [graphRefreshKey, setGraphRefreshKey] = useState(0)
   const [expandedNodeIds, setExpandedNodeIds] = useState<string[]>([])
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [graphFilters, setGraphFilters] = useState<GraphFilters>({})
   const nameInputRef = useRef<HTMLInputElement | null>(null)
   const renameInFlightRef = useRef(false)
   const uploadInFlightRef = useRef(false)
@@ -84,10 +87,16 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
     nameInputRef.current?.select()
   }, [isEditingName])
 
+  const activeFilterCount =
+    (graphFilters.categoryFilters?.length ?? 0) +
+    (graphFilters.edgeTypeFilters?.length ?? 0) +
+    ((graphFilters.limit ?? 50) !== 50 ? 1 : 0)
+
   const { graph, isLoading, error } = useGetGraph({
     workspaceId: workspace?.id ?? workspaceId,
     documentId: null,
     refreshKey: graphRefreshKey,
+    filters: graphFilters,
   })
   const combinedError = pageError ?? error
   const emptyMessage = workspace ? 'この workspace にはまだ document がありません。' : 'Workspace not found.'
@@ -277,6 +286,22 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
             )}
             <button
               type="button"
+              onClick={() => setIsFilterOpen((open) => !open)}
+              className={`relative rounded-lg border px-3 py-1.5 text-xs shadow-sm backdrop-blur-sm transition-colors ${
+                isFilterOpen || activeFilterCount > 0
+                  ? 'border-slate-700 bg-slate-900 text-white hover:bg-slate-700'
+                  : 'border-slate-200/70 bg-white/80 text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              Filter
+              {activeFilterCount > 0 && (
+                <span className="ml-1.5 rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-bold">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+            <button
+              type="button"
               onClick={() => setIsUploadOpen((open) => !open)}
               className="rounded-lg border border-slate-200/70 bg-white/80 px-3 py-1.5 text-xs text-slate-500 shadow-sm backdrop-blur-sm transition-colors hover:text-slate-700"
             >
@@ -302,6 +327,14 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
           onNodeSelect={handleNodeSelect}
         />
       </main>
+
+      {isFilterOpen && (
+        <GraphFilterPanel
+          filters={graphFilters}
+          onChange={setGraphFilters}
+          onClose={() => setIsFilterOpen(false)}
+        />
+      )}
 
       {isUploadOpen && (
         <div className="absolute right-5 top-20 z-30 w-[360px] rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur-sm">

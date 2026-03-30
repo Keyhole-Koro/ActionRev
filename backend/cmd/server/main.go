@@ -29,7 +29,7 @@ func corsMiddleware(next http.Handler) http.Handler {
 		if origin != "" && isAllowedOrigin(origin, allowedOrigins) {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Set("Vary", "Origin")
-			w.Header().Set("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+			w.Header().Set("Access-Control-Allow-Methods", "GET,POST,PUT,OPTIONS")
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Connect-Protocol-Version,Connect-Timeout-Ms,X-User-Agent")
 		}
 
@@ -68,6 +68,10 @@ func isAllowedOrigin(origin string, allowed []string) bool {
 
 func main() {
 	mux := http.NewServeMux()
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -75,8 +79,9 @@ func main() {
 	})
 
 	documentRepo := mockrepo.NewDocumentRepository()
-	documentService := service.NewDocumentService(documentRepo)
+	documentService := service.NewDocumentService(documentRepo, publicBackendBaseURL(port))
 	documentHandler := handler.NewDocumentHandler(documentService)
+	mockUploadHandler := handler.NewMockUploadHandler(documentService)
 	graphRepo := mockrepo.NewGraphRepository(documentRepo)
 	graphService := service.NewGraphService(graphRepo)
 	graphHandler := handler.NewGraphHandler(graphService)
@@ -88,6 +93,7 @@ func main() {
 	mux.Handle(path, connectHandler)
 	documentPath, documentConnectHandler := graphv1connect.NewDocumentServiceHandler(documentHandler)
 	mux.Handle(documentPath, documentConnectHandler)
+	mux.Handle("/mock/uploads/", mockUploadHandler)
 	workspacePath, workspaceConnectHandler := graphv1connect.NewWorkspaceServiceHandler(workspaceHandler)
 	mux.Handle(workspacePath, workspaceConnectHandler)
 
@@ -99,13 +105,16 @@ func main() {
 		})
 	})
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-
 	log.Printf("synthify backend listening on :%s", port)
 	if err := http.ListenAndServe(":"+port, corsMiddleware(mux)); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func publicBackendBaseURL(port string) string {
+	if baseURL := strings.TrimSpace(os.Getenv("PUBLIC_BASE_URL")); baseURL != "" {
+		return strings.TrimRight(baseURL, "/")
+	}
+
+	return "http://localhost:" + port
 }

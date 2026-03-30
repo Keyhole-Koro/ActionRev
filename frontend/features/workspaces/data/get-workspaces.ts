@@ -133,6 +133,23 @@ export async function uploadWorkspaceDocument(workspaceId: string, file: File) {
     throw new Error('Failed to create document.')
   }
 
+  if (!response.uploadUrl) {
+    throw new Error('Upload URL was not returned.')
+  }
+
+  const uploadResponse = await fetch(response.uploadUrl, {
+    method: response.uploadMethod || 'PUT',
+    headers: {
+      'Content-Type': response.uploadContentType || file.type || 'application/octet-stream',
+    },
+    body: file,
+  })
+
+  if (!uploadResponse.ok) {
+    const uploadError = await uploadResponse.text()
+    throw new Error(uploadError || 'Failed to upload file.')
+  }
+
   const processing = await documentClient.startProcessing({
     workspaceId,
     documentId: document.documentId,
