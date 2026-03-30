@@ -8,3 +8,11 @@ export type WorkspaceCard = {
   documentId: string | null
   badge: string
 }
+
+export type WorkspaceDocument = {
+  id: string
+  filename: string
+  mimeType: string
+  fileSize: number
+  status: string
+}

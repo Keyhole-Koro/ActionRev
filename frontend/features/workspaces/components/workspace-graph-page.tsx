@@ -4,8 +4,13 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { GraphCanvasPanel } from '@/features/graph/components/graph-canvas-panel'
 import { useGetGraph } from '@/features/graph/hooks/use-get-graph'
-import { getWorkspaceCard, updateWorkspaceName } from '../data/get-workspaces'
-import type { WorkspaceCard } from '../types/workspace-card'
+import {
+  getWorkspaceCard,
+  getWorkspaceDocuments,
+  updateWorkspaceName,
+  uploadWorkspaceDocument,
+} from '../data/get-workspaces'
+import type { WorkspaceCard, WorkspaceDocument } from '../types/workspace-card'
 
 type WorkspaceGraphPageProps = {
   workspaceId: string
@@ -18,6 +23,10 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
   const [draftName, setDraftName] = useState('')
   const [isEditingName, setIsEditingName] = useState(false)
   const [isRenaming, setIsRenaming] = useState(false)
+  const [documents, setDocuments] = useState<WorkspaceDocument[]>([])
+  const [isUploadOpen, setIsUploadOpen] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
   const nameInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
@@ -25,7 +34,10 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
 
     async function load() {
       setIsWorkspaceLoading(true)
-      const result = await getWorkspaceCard(workspaceId)
+      const [result, workspaceDocuments] = await Promise.all([
+        getWorkspaceCard(workspaceId),
+        getWorkspaceDocuments(workspaceId),
+      ])
 
       if (cancelled) {
         return
@@ -33,6 +45,7 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
 
       setWorkspace(result.workspace)
       setDraftName(result.workspace?.name ?? '')
+      setDocuments(workspaceDocuments)
       setPageError(result.error ?? (result.workspace ? null : 'Workspace not found.'))
       setIsWorkspaceLoading(false)
     }
@@ -108,6 +121,43 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
     setIsEditingName(false)
   }
 
+  async function handleUploadDocument(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (!workspace || !selectedFile) {
+      return
+    }
+
+    try {
+      setIsUploading(true)
+      setPageError(null)
+      const uploadedDocument = await uploadWorkspaceDocument(workspace.id, selectedFile)
+      const [nextWorkspace, nextDocuments] = await Promise.all([
+        getWorkspaceCard(workspace.id),
+        getWorkspaceDocuments(workspace.id),
+      ])
+
+      setWorkspace(nextWorkspace.workspace)
+      setDraftName(nextWorkspace.workspace?.name ?? '')
+      setDocuments(nextDocuments)
+      setSelectedFile(null)
+      setIsUploadOpen(false)
+      if (!nextWorkspace.workspace) {
+        setPageError('Workspace not found.')
+        return
+      }
+
+      setDocuments((currentDocuments) => {
+        const exists = currentDocuments.some((document) => document.id === uploadedDocument.id)
+        return exists ? nextDocuments : [uploadedDocument, ...nextDocuments]
+      })
+    } catch (uploadError) {
+      setPageError(uploadError instanceof Error ? uploadError.message : String(uploadError))
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
   return (
     <div className="relative h-screen bg-white">
       {/* Floating nav */}
@@ -153,12 +203,21 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
             </nav>
           </div>
 
-          <Link
-            href="/dashboard"
-            className="rounded-lg border border-slate-200/70 bg-white/70 px-3 py-1.5 text-xs text-slate-400 shadow-sm backdrop-blur-sm transition-colors hover:text-slate-600"
-          >
-            ← Back
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsUploadOpen((open) => !open)}
+              className="rounded-lg border border-slate-200/70 bg-white/80 px-3 py-1.5 text-xs text-slate-500 shadow-sm backdrop-blur-sm transition-colors hover:text-slate-700"
+            >
+              Upload file
+            </button>
+            <Link
+              href="/dashboard"
+              className="rounded-lg border border-slate-200/70 bg-white/70 px-3 py-1.5 text-xs text-slate-400 shadow-sm backdrop-blur-sm transition-colors hover:text-slate-600"
+            >
+              ← Back
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -171,6 +230,69 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
           emptyMessage={emptyMessage}
         />
       </main>
+
+      {isUploadOpen && (
+        <div className="absolute right-5 top-20 z-30 w-[360px] rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-slate-900">Upload file</p>
+              <p className="mt-1 text-xs text-slate-500">
+                ファイルを追加すると mock processing 後に graph の対象 document が切り替わります。
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsUploadOpen(false)}
+              className="text-xs text-slate-400 transition-colors hover:text-slate-600"
+            >
+              Close
+            </button>
+          </div>
+
+          <form onSubmit={handleUploadDocument} className="mt-4 space-y-4">
+            <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center transition-colors hover:border-slate-400 hover:bg-white">
+              <span className="text-sm font-medium text-slate-700">
+                {selectedFile ? selectedFile.name : 'Select a file'}
+              </span>
+              <span className="mt-1 text-xs text-slate-400">
+                PDF, text, or any mock file metadata
+              </span>
+              <input
+                type="file"
+                className="hidden"
+                onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
+              />
+            </label>
+
+            <button
+              type="submit"
+              disabled={!selectedFile || isUploading}
+              className="inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isUploading ? 'Uploading…' : 'Upload and process'}
+            </button>
+          </form>
+
+          <div className="mt-4 border-t border-slate-100 pt-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Documents</p>
+            <div className="mt-3 space-y-2">
+              {documents.length === 0 ? (
+                <p className="text-sm text-slate-400">まだ document はありません。</p>
+              ) : (
+                documents.slice(0, 4).map((document) => (
+                  <div key={document.id} className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="truncate text-sm font-medium text-slate-700">{document.filename}</p>
+                      <span className="text-xs text-slate-400">{document.status}</span>
+                    </div>
+                    <p className="mt-1 text-xs text-slate-400">{document.id}</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

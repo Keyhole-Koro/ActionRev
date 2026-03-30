@@ -77,12 +77,17 @@ func main() {
 	graphRepo := mockrepo.NewGraphRepository()
 	graphService := service.NewGraphService(graphRepo)
 	graphHandler := handler.NewGraphHandler(graphService)
+	documentRepo := mockrepo.NewDocumentRepository()
+	documentService := service.NewDocumentService(documentRepo)
+	documentHandler := handler.NewDocumentHandler(documentService)
 	workspaceRepo := mockrepo.NewWorkspaceRepository()
 	workspaceService := service.NewWorkspaceService(workspaceRepo)
 	workspaceHandler := handler.NewWorkspaceHandler(workspaceService)
 
 	path, connectHandler := graphv1connect.NewGraphServiceHandler(graphHandler)
 	mux.Handle(path, connectHandler)
+	documentPath, documentConnectHandler := graphv1connect.NewDocumentServiceHandler(documentHandler)
+	mux.Handle(documentPath, documentConnectHandler)
 	workspacePath, workspaceConnectHandler := graphv1connect.NewWorkspaceServiceHandler(workspaceHandler)
 	mux.Handle(workspacePath, workspaceConnectHandler)
 
