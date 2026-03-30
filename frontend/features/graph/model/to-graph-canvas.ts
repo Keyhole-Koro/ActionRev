@@ -48,6 +48,7 @@ const EXPANDED_PADDING_HEIGHT = 48
 type ToGraphCanvasOptions = {
   expandedNodeIds?: Iterable<string>
   sourceDocumentsByNodeId?: Record<string, GraphCanvasSourceDocument[]>
+  searchQuery?: string
 }
 
 function estimateExpandedHeight(description: string, sourceDocuments: GraphCanvasSourceDocument[], chunkCount: number) {
@@ -66,6 +67,8 @@ export function toGraphCanvas(graph: Graph | undefined, options: ToGraphCanvasOp
 
   const expandedNodeIds = new Set(options.expandedNodeIds ?? [])
   const sourceDocumentsByNodeId = options.sourceDocumentsByNodeId ?? {}
+  const searchQuery = options.searchQuery?.trim().toLowerCase() ?? ''
+  const hasSearch = searchQuery.length > 0
   const hasExpandedNodes = expandedNodeIds.size > 0
   const connectedNodeIds = new Set<string>()
 
@@ -107,12 +110,18 @@ export function toGraphCanvas(graph: Graph | undefined, options: ToGraphCanvasOp
       const height = expanded
         ? estimateExpandedHeight(node.description, sourceDocuments, node.sourceChunkIds.length)
         : COLLAPSED_NODE_HEIGHT
-      const isDimmed = hasExpandedNodes && !expanded && !connected
+      const matchesSearch = hasSearch
+        ? node.label.toLowerCase().includes(searchQuery) ||
+          node.description.toLowerCase().includes(searchQuery)
+        : true
+      const isDimmed = (hasExpandedNodes && !expanded && !connected) || (hasSearch && !matchesSearch)
       const boxShadow = expanded
         ? '0 28px 60px rgba(15, 23, 42, 0.16)'
-        : connected
-          ? '0 22px 48px rgba(15, 23, 42, 0.12)'
-          : '0 20px 45px rgba(15, 23, 42, 0.08)'
+        : hasSearch && matchesSearch
+          ? '0 0 0 2px #0f172a, 0 22px 48px rgba(15, 23, 42, 0.16)'
+          : connected
+            ? '0 22px 48px rgba(15, 23, 42, 0.12)'
+            : '0 20px 45px rgba(15, 23, 42, 0.08)'
 
       columnWidth = Math.max(columnWidth, width)
       nodes.push({

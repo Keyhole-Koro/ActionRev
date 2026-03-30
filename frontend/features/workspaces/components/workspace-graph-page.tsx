@@ -34,6 +34,7 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
   const [expandedNodeIds, setExpandedNodeIds] = useState<string[]>([])
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [graphFilters, setGraphFilters] = useState<GraphFilters>({})
+  const [searchQuery, setSearchQuery] = useState('')
   const nameInputRef = useRef<HTMLInputElement | null>(null)
   const renameInFlightRef = useRef(false)
   const uploadInFlightRef = useRef(false)
@@ -119,10 +120,18 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
         }),
       )
     : {}
+  const matchCount = searchQuery.trim()
+    ? graph?.graph.nodes.filter((node) => {
+        const q = searchQuery.trim().toLowerCase()
+        return node.label.toLowerCase().includes(q) || node.description.toLowerCase().includes(q)
+      }).length ?? 0
+    : null
+
   const expandedCanvas = graph
     ? toGraphCanvas(graph.graph, {
         expandedNodeIds: expandedNodeIdSet,
         sourceDocumentsByNodeId,
+        searchQuery,
       })
     : null
 
@@ -275,6 +284,31 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Search */}
+            <div className="relative flex items-center">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Search nodes…"
+                className="w-48 rounded-lg border border-slate-200/70 bg-white/80 py-1.5 pl-3 pr-8 text-xs text-slate-600 shadow-sm backdrop-blur-sm outline-none transition-all placeholder:text-slate-300 focus:border-slate-400 focus:w-64"
+              />
+              {searchQuery ? (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 text-slate-300 hover:text-slate-500 transition-colors"
+                >
+                  ×
+                </button>
+              ) : null}
+              {matchCount !== null && (
+                <span className="absolute -right-2 -top-2 rounded-full bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                  {matchCount}
+                </span>
+              )}
+            </div>
+
             {expandedNodeIds.length > 0 && (
               <button
                 type="button"
