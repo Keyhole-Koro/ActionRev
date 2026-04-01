@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package synthify.graph.v1;
+
+import "google/protobuf/timestamp.proto";
+import "synthify/graph/v1/document.proto";
+import "synthify/graph/v1/tree_blocks.proto";
+import "synthify/graph/v1/tree_common.proto";
+
+option go_package = "github.com/synthify/backend/gen/synthify/graph/v1;graphv1";
+
+enum PaperNodeCategory {
+  PAPER_NODE_CATEGORY_UNSPECIFIED = 0;
+  PAPER_NODE_CATEGORY_CONCEPT = 1;
+  PAPER_NODE_CATEGORY_CLAIM = 2;
+  PAPER_NODE_CATEGORY_EVIDENCE = 3;
+  PAPER_NODE_CATEGORY_ENTITY = 4;
+  PAPER_NODE_CATEGORY_METRIC = 5;
+  PAPER_NODE_CATEGORY_ACTION = 6;
+}
+
+enum PaperNodeScope {
+  PAPER_NODE_SCOPE_UNSPECIFIED = 0;
+  PAPER_NODE_SCOPE_WORKSPACE = 1;
+  PAPER_NODE_SCOPE_DOCUMENT = 2;
+  PAPER_NODE_SCOPE_CANONICAL = 3;
+}
+
+enum PaperNodeStatus {
+  PAPER_NODE_STATUS_UNSPECIFIED = 0;
+  PAPER_NODE_STATUS_READY = 1;
+  PAPER_NODE_STATUS_DRAFT = 2;
+  PAPER_NODE_STATUS_PENDING = 3;
+  PAPER_NODE_STATUS_ARCHIVED = 4;
+}
+
+message WorkspaceTree {
+  string workspace_id = 1;
+  string root_node_id = 2;
+  repeated PaperNode nodes = 3;
+  repeated Document documents = 4;
+}
+
+message PaperNode {
+  string paper_node_id = 1;
+  string workspace_id = 2;
+  string parent_id = 3;
+  repeated string child_ids = 4;
+
+  string title = 5;
+  string description = 6;
+  string content = 7;
+
+  PaperNodeCategory category = 8;
+  PaperNodeScope scope = 9;
+  uint32 display_order = 10;
+  PaperNodeStatus status = 11;
+
+  repeated string source_document_ids = 12;
+  repeated string source_chunk_ids = 13;
+
+  PaperMeta meta = 14;
+  repeated PaperBlock blocks = 15;
+
+  google.protobuf.Timestamp created_at = 16;
+  google.protobuf.Timestamp updated_at = 17;
+}
+
+message PaperMeta {
+  repeated string badges = 1;
+  bool is_new = 2;
+  bool is_loading = 3;
+  repeated NodeRelationSummary relations = 4;
+}

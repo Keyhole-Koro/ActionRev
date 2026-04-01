@@ -1,0 +1,123 @@
+syntax = "proto3";
+
+package synthify.graph.v1;
+
+import "synthify/graph/v1/tree_notes.proto";
+import "synthify/graph/v1/tree_types.proto";
+import "synthify/graph/v1/workspace.proto";
+
+option go_package = "github.com/synthify/backend/gen/synthify/graph/v1;graphv1";
+
+message GetWorkspaceTreeRequest {
+  string workspace_id = 1;
+}
+
+message GetWorkspaceTreeResponse {
+  Workspace workspace = 1;
+  WorkspaceTree tree = 2;
+}
+
+message ListPaperNodeChildrenRequest {
+  string workspace_id = 1;
+  string parent_id = 2;
+}
+
+message ListPaperNodeChildrenResponse {
+  repeated PaperNode nodes = 1;
+}
+
+message GetPaperNodeRequest {
+  string workspace_id = 1;
+  string paper_node_id = 2;
+}
+
+message CreatePaperNodeRequest {
+  string workspace_id = 1;
+  string parent_id = 2;
+  string title = 3;
+  string description = 4;
+  string content = 5;
+  PaperNodeCategory category = 6;
+  PaperNodeScope scope = 7;
+  repeated string source_document_ids = 8;
+}
+
+message UpdatePaperNodeRequest {
+  string workspace_id = 1;
+  string paper_node_id = 2;
+  string title = 3;
+  string description = 4;
+  string content = 5;
+  PaperNodeStatus status = 6;
+}
+
+message ReorderPaperNodeRequest {
+  string workspace_id = 1;
+  string paper_node_id = 2;
+  string new_parent_id = 3;
+  string insert_before_id = 4;
+}
+
+message ReorderPaperNodeResponse {
+  PaperNode node = 1;
+  repeated string sibling_ids = 2;
+}
+
+message ListNodeNotesRequest {
+  string workspace_id = 1;
+  string paper_node_id = 2;
+}
+
+message ListNodeNotesResponse {
+  repeated PaperNote notes = 1;
+}
+
+message CreateNodeNoteRequest {
+  string workspace_id = 1;
+  string paper_node_id = 2;
+  PaperNoteKind kind = 3;
+  string title = 4;
+  string body = 5;
+  NotePriority priority = 6;
+}
+
+message ListNodeActionRequestsRequest {
+  string workspace_id = 1;
+  string paper_node_id = 2;
+}
+
+message ListNodeActionRequestsResponse {
+  repeated ActionRequest action_requests = 1;
+}
+
+message ResolveActionRequestRequest {
+  string workspace_id = 1;
+  string action_request_id = 2;
+  string resolution_note = 3;
+}
+
+message DismissActionRequestRequest {
+  string workspace_id = 1;
+  string action_request_id = 2;
+  string reason = 3;
+}
+
+service WorkspaceTreeService {
+  rpc GetWorkspaceTree(GetWorkspaceTreeRequest) returns (GetWorkspaceTreeResponse);
+  rpc ListPaperNodeChildren(ListPaperNodeChildrenRequest) returns (ListPaperNodeChildrenResponse);
+  rpc GetPaperNode(GetPaperNodeRequest) returns (PaperNode);
+  rpc CreatePaperNode(CreatePaperNodeRequest) returns (PaperNode);
+  rpc UpdatePaperNode(UpdatePaperNodeRequest) returns (PaperNode);
+  rpc ReorderPaperNode(ReorderPaperNodeRequest) returns (ReorderPaperNodeResponse);
+}
+
+service PaperNoteService {
+  rpc ListNodeNotes(ListNodeNotesRequest) returns (ListNodeNotesResponse);
+  rpc CreateNodeNote(CreateNodeNoteRequest) returns (PaperNote);
+}
+
+service ActionRequestService {
+  rpc ListNodeActionRequests(ListNodeActionRequestsRequest) returns (ListNodeActionRequestsResponse);
+  rpc ResolveActionRequest(ResolveActionRequestRequest) returns (ActionRequest);
+  rpc DismissActionRequest(DismissActionRequestRequest) returns (ActionRequest);
+}

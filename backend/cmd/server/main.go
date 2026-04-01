@@ -88,6 +88,13 @@ func main() {
 	workspaceRepo := mockrepo.NewWorkspaceRepository()
 	workspaceService := service.NewWorkspaceService(workspaceRepo)
 	workspaceHandler := handler.NewWorkspaceHandler(workspaceService)
+	treeRepo := mockrepo.NewTreeRepository()
+	workspaceTreeService := service.NewWorkspaceTreeService(workspaceRepo, documentRepo, treeRepo)
+	workspaceTreeHandler := handler.NewWorkspaceTreeHandler(workspaceTreeService)
+	paperNoteService := service.NewPaperNoteService(treeRepo)
+	paperNoteHandler := handler.NewPaperNoteHandler(paperNoteService)
+	actionRequestService := service.NewActionRequestService(treeRepo)
+	actionRequestHandler := handler.NewActionRequestHandler(actionRequestService)
 
 	path, connectHandler := graphv1connect.NewGraphServiceHandler(graphHandler)
 	mux.Handle(path, connectHandler)
@@ -96,6 +103,12 @@ func main() {
 	mux.Handle("/mock/uploads/", mockUploadHandler)
 	workspacePath, workspaceConnectHandler := graphv1connect.NewWorkspaceServiceHandler(workspaceHandler)
 	mux.Handle(workspacePath, workspaceConnectHandler)
+	workspaceTreePath, workspaceTreeConnectHandler := graphv1connect.NewWorkspaceTreeServiceHandler(workspaceTreeHandler)
+	mux.Handle(workspaceTreePath, workspaceTreeConnectHandler)
+	paperNotePath, paperNoteConnectHandler := graphv1connect.NewPaperNoteServiceHandler(paperNoteHandler)
+	mux.Handle(paperNotePath, paperNoteConnectHandler)
+	actionRequestPath, actionRequestConnectHandler := graphv1connect.NewActionRequestServiceHandler(actionRequestHandler)
+	mux.Handle(actionRequestPath, actionRequestConnectHandler)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

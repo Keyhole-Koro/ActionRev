@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package synthify.graph.v1;
+
+option go_package = "github.com/synthify/backend/gen/synthify/graph/v1;graphv1";
+
+enum PaperRelationType {
+  PAPER_RELATION_TYPE_UNSPECIFIED = 0;
+  PAPER_RELATION_TYPE_SUPPORTS = 1;
+  PAPER_RELATION_TYPE_RELATES_TO = 2;
+  PAPER_RELATION_TYPE_CONTRADICTS = 3;
+  PAPER_RELATION_TYPE_MEASURED_BY = 4;
+  PAPER_RELATION_TYPE_REFERENCES = 5;
+}
+
+message NodeRelationSummary {
+  string target_node_id = 1;
+  PaperRelationType relation_type = 2;
+  string label = 3;
+}

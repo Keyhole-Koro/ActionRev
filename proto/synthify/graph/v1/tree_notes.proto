@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package synthify.graph.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/synthify/backend/gen/synthify/graph/v1;graphv1";
+
+enum PaperNoteKind {
+  PAPER_NOTE_KIND_UNSPECIFIED = 0;
+  PAPER_NOTE_KIND_CONFIRMATION = 1;
+  PAPER_NOTE_KIND_DECISION = 2;
+  PAPER_NOTE_KIND_MISSING_EVIDENCE = 3;
+  PAPER_NOTE_KIND_REVIEW = 4;
+  PAPER_NOTE_KIND_NEXT_ACTION = 5;
+}
+
+enum NotePriority {
+  NOTE_PRIORITY_UNSPECIFIED = 0;
+  NOTE_PRIORITY_LOW = 1;
+  NOTE_PRIORITY_MEDIUM = 2;
+  NOTE_PRIORITY_HIGH = 3;
+}
+
+enum ActionRequestType {
+  ACTION_REQUEST_TYPE_UNSPECIFIED = 0;
+  ACTION_REQUEST_TYPE_CONFIRM = 1;
+  ACTION_REQUEST_TYPE_DECIDE = 2;
+  ACTION_REQUEST_TYPE_ADD_EVIDENCE = 3;
+  ACTION_REQUEST_TYPE_REVIEW = 4;
+  ACTION_REQUEST_TYPE_EXECUTE_NEXT_STEP = 5;
+}
+
+enum ActionRequestPriority {
+  ACTION_REQUEST_PRIORITY_UNSPECIFIED = 0;
+  ACTION_REQUEST_PRIORITY_LOW = 1;
+  ACTION_REQUEST_PRIORITY_MEDIUM = 2;
+  ACTION_REQUEST_PRIORITY_HIGH = 3;
+}
+
+enum ActionRequestStatus {
+  ACTION_REQUEST_STATUS_UNSPECIFIED = 0;
+  ACTION_REQUEST_STATUS_OPEN = 1;
+  ACTION_REQUEST_STATUS_ACKNOWLEDGED = 2;
+  ACTION_REQUEST_STATUS_RESOLVED = 3;
+  ACTION_REQUEST_STATUS_DISMISSED = 4;
+}
+
+message PaperNote {
+  string note_id = 1;
+  string workspace_id = 2;
+  string paper_node_id = 3;
+
+  PaperNoteKind kind = 4;
+  string title = 5;
+  string body = 6;
+  NotePriority priority = 7;
+
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+message ActionRequest {
+  string action_request_id = 1;
+  string workspace_id = 2;
+  string paper_node_id = 3;
+  string note_id = 4;
+
+  ActionRequestType type = 5;
+  string title = 6;
+  string body = 7;
+  ActionRequestPriority priority = 8;
+  ActionRequestStatus status = 9;
+
+  string requested_by = 10;
+  string assigned_to = 11;
+
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp resolved_at = 13;
+}

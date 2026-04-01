@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package synthify.graph.v1;
+
+import "synthify/graph/v1/tree_common.proto";
+import "synthify/graph/v1/tree_notes.proto";
+
+option go_package = "github.com/synthify/backend/gen/synthify/graph/v1;graphv1";
+
+message PaperBlock {
+  oneof kind {
+    NoteBlock note = 1;
+    MetricBlock metric = 2;
+    RelationsBlock relations = 3;
+    DocumentsBlock documents = 4;
+    WarningBlock warning = 5;
+    MiniGraphBlock mini_graph = 6;
+  }
+}
+
+message NoteBlock {
+  string note_id = 1;
+  string title = 2;
+  string body = 3;
+  PaperNoteKind kind = 4;
+  NotePriority priority = 5;
+}
+
+message MetricBlock {
+  string metric_id = 1;
+  string label = 2;
+  string value = 3;
+  string unit = 4;
+  string trend_label = 5;
+}
+
+message RelationsBlock {
+  repeated NodeRelationSummary items = 1;
+}
+
+message DocumentsBlock {
+  repeated string document_ids = 1;
+}
+
+message WarningBlock {
+  string warning_id = 1;
+  string title = 2;
+  string body = 3;
+}
+
+message MiniGraphBlock {
+  repeated MiniGraphNode nodes = 1;
+  repeated MiniGraphEdge edges = 2;
+}
+
+message MiniGraphNode {
+  string node_id = 1;
+  string label = 2;
+}
+
+message MiniGraphEdge {
+  string edge_id = 1;
+  string source_node_id = 2;
+  string target_node_id = 3;
+  string label = 4;
+}
