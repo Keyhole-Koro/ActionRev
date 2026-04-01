@@ -11,6 +11,7 @@ export type GraphCanvasNodeData = {
   sourceChunkIds: string[]
   expanded?: boolean
   isExpanding?: boolean
+  isNew?: boolean
   sourceDocuments?: Array<{
     id: string
     filename: string

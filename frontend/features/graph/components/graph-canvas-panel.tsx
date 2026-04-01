@@ -21,7 +21,14 @@ function GraphCanvasNode({ data }: NodeProps<Node<GraphCanvasNodeData>>) {
       />
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-slate-900">{data.label}</p>
+          <div className="flex items-center gap-2">
+            <p className="truncate text-sm font-semibold text-slate-900">{data.label}</p>
+            {data.isNew && (
+              <span className="shrink-0 rounded-full bg-teal-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                New
+              </span>
+            )}
+          </div>
           <p className="mt-1 text-xs text-slate-400">
             {data.category} · {data.scope} · L{data.level}
           </p>

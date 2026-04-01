@@ -157,12 +157,14 @@ export function WorkspaceGraphPage({ workspaceId }: WorkspaceGraphPageProps) {
           sourceDocumentsByNodeId,
           searchQuery,
         })
+        const extraNodeIds = new Set(extraNodes.map((n) => n.id))
         return {
           ...canvas,
           nodes: canvas.nodes.map((node) => ({
             ...node,
             data: {
               ...node.data,
+              isNew: extraNodeIds.has(node.id),
               isExpanding: expandingNodeIds.has(node.id),
               onExpandNeighbors: expandedNeighborNodeIds.has(node.id)
                 ? undefined
